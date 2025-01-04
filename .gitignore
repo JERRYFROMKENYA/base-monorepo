@@ -1,0 +1,32 @@
+# Node.js dependencies
+node_modules/
+
+# Build directories
+dist/
+build/
+*expo/
+
+
+# Environment files
+.env
+
+# Log files
+*.log
+
+# Docker-related files
+docker-compose.override.yml
+*.env
+
+
+# IDE-specific files
+.idea/
+.vscode/
+*expo
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+/pb/pb_data/data.db
+/pb/pb_data/logs.db
+/pb/pb_data/backups/
+/pb/pb_data/
