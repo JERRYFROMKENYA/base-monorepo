@@ -93,7 +93,30 @@ const DrawerLayout = () => {
                 <Tooltip title={Locales.t('titleSettings')}>
                   <Appbar.Action
                     icon="cog"
-                    onPress={() => router.push('/(tabs)/settings')}
+                    onPress={() => router.push('/drawer/settings')}
+                  />
+                </Tooltip>
+              </>
+            ),
+          }}
+        />
+        <Drawer.Screen
+          name="for_you"
+          options={{
+            drawerLabel: Locales.t('for_you'),
+            title: Locales.t('for_you'),
+            headerRight: () => (
+              <>
+                <Tooltip title={Locales.t('search')}>
+                  <Appbar.Action
+                    icon="magnify"
+                    onPress={() => router.push('/search')}
+                  />
+                </Tooltip>
+                <Tooltip title={Locales.t('titleSettings')}>
+                  <Appbar.Action
+                    icon="youtube-subscription"
+                    onPress={() => router.push('/drawer/settings')}
                   />
                 </Tooltip>
               </>

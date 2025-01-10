@@ -3,6 +3,7 @@
  */
 
 const English = {
+  for_you: 'For you',
   fantasy: 'Fantasy',
   statistics: 'Statistics',
   news: 'News',

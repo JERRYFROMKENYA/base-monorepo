@@ -21,14 +21,14 @@
       "infoPlist": {
         "ExpoLocalization_supportsRTL": true
       },
-      "bundleIdentifier": "com.jerryfromkenya.base"
+      "bundleIdentifier": "com.app.base"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.jerryfromkenya.base"
+      "package": "com.app.base"
     },
     "web": {
       "bundler": "metro",

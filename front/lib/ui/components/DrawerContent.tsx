@@ -11,51 +11,58 @@ interface DrawerContentProps extends DrawerSectionProps {
 
 const DrawerContent = (props: DrawerContentProps) => (
   <Drawer.Section {...props}>
-    <Drawer.Item
-      label={Locales.t('goHome')}
-      icon="arrow-left"
-      onPress={() => router.replace('/')}
-    />
+    {/*<Drawer.Item*/}
+    {/*  label={Locales.t('goHome')}*/}
+    {/*  icon="arrow-left"*/}
+    {/*  onPress={() => router.replace('/')}*/}
+    {/*/>*/}
     <Drawer.Item
       label={Locales.t('titleHome')}
       icon="baseball"
       active={props.navProps.state.index === 0}
       onPress={() => router.push('/drawer')}
     />
+      <Drawer.Item
+        label={Locales.t('for_you')}
+        icon="book-play"
+        active={props.navProps.state.index === 1}
+        onPress={() => router.push('/drawer/for_you')}
+      />
     <Drawer.Item
       label={Locales.t('fantasy')}
       icon="baseball-diamond"
-      active={props.navProps.state.index === 1}
+      active={props.navProps.state.index === 2}
       onPress={() => router.push('/drawer/fantasy')}
     />
     <Drawer.Item
       label={Locales.t('news')}
       icon="newspaper"
-      active={props.navProps.state.index === 2}
+      active={props.navProps.state.index === 3}
       onPress={() => router.push('/drawer/news')}
     />
     <Drawer.Item
       label={Locales.t('statistics')}
       icon="chart-line"
-      active={props.navProps.state.index === 3}
+      active={props.navProps.state.index === 4}
       onPress={() => router.push('/drawer/statistics')}
     />
     <Drawer.Item
       label={Locales.t('predictions')}
       icon="baseball-bat"
-      active={props.navProps.state.index === 4}
+      active={props.navProps.state.index === 5}
       onPress={() => router.push('/drawer/predictions')}
     />
+
     <Drawer.Item
       label={Locales.t('profile')}
       icon="account"
-      active={props.navProps.state.index === 5}
+      active={props.navProps.state.index === 6}
       onPress={() => router.push('/drawer/profile')}
     />
     <Drawer.Item
       label={Locales.t('titleSettings')}
       icon="cog"
-      active={props.navProps.state.index === 6}
+      active={props.navProps.state.index === 7}
       onPress={() => router.push('/drawer/settings')}
     />
   </Drawer.Section>
