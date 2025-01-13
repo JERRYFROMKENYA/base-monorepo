@@ -1,3 +1,5 @@
-streamlit
+Flask
+pandas
+requests
+google-cloud-storage
 google-cloud-aiplatform
-google-cloud-logging

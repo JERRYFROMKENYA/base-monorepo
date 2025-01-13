@@ -1,10 +1,17 @@
-FROM python:3.8
+# Use an official Python runtime as a parent image
+FROM python:3.12-slim
 
-EXPOSE 8080
+# Set the working directory
 WORKDIR /app
 
-COPY . ./
+# Copy the current directory contents into the container
+COPY . .
 
-RUN pip install -r requirements.txt
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8080", "--server.address=0.0.0.0"]
+# Expose the port Flask uses
+EXPOSE 5000
+
+# Run the application
+CMD ["python", "run.py"]
