@@ -24,11 +24,26 @@ services:
     restart: unless-stopped
     container_name: server_2
     ports:
+      - "3000:3000"
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+    environment:
+      - POCKETBASE_URL=http://pocketbase:8090
+    networks:
+      - base_network
+
+  server_1:
+    build: ./server_1
+    restart: unless-stopped
+    container_name: server_2
+    ports:
       - "5000:5000"
     depends_on:
       pocketbase:
         condition: service_healthy
     environment:
       - POCKETBASE_URL=http://pocketbase:8090
+      - GENAI_API_KEY
     networks:
       - base_network
