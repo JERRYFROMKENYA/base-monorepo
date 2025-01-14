@@ -4,3 +4,4 @@ from app.routes.players import *
 from app.routes.schedule import *
 from app.routes.captions import *
 # from app.routes.predictions import *
+from app.routes.video_analysis import *
