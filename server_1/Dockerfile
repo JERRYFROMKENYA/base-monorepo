@@ -7,11 +7,15 @@ WORKDIR /app
 # Copy the current directory contents into the container
 COPY . .
 
+# Create and activate a virtual environment
+RUN python -m venv venv
+RUN . venv/bin/activate
+
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Expose the port Flask uses
 EXPOSE 5000
 
 # Run the application
-CMD ["python", "run.py"]
+CMD ["venv/bin/python", "run.py"]
