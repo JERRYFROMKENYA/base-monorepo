@@ -36,7 +36,7 @@ services:
   server_1:
     build: ./server_1
     restart: unless-stopped
-    container_name: server_2
+    container_name: server_1
     ports:
       - "5000:5000"
     depends_on:
