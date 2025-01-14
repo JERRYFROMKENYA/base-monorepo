@@ -4,12 +4,12 @@ import os
 import time
 import typing
 
-import cv2
-import matplotlib.pyplot as plt
+# import cv2
+# import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 from flask import jsonify, request
 from app import app
-from app.util.utilities import process_endpoint_url
+# from app.util.utilities import process_endpoint_url
 import google.generativeai as genai
 
 # Load environment variables from .env file
