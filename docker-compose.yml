@@ -38,7 +38,7 @@ services:
     restart: unless-stopped
     container_name: server_1
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000"
     depends_on:
       pocketbase:
         condition: service_healthy
