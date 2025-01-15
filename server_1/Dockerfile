@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies
-RUN pip3 install --root-user-action --no-cache-dir -r requirements.txt
+RUN pip3 install --root-user-action ignore --no-cache-dir -r requirements.txt
 
 # Expose the port Flask uses
 EXPOSE 5000
