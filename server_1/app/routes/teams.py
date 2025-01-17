@@ -10,10 +10,13 @@ def get_teams():
     teams = process_endpoint_url(teams_endpoint_url, 'teams')
     if search:
         filtered_teams = teams[teams.apply(lambda row: row.astype(str).str.contains(search, case=False, na=False).any(), axis=1)]
+        filtered_teams['logo'] = filtered_teams['id'].apply(lambda team_id: f'https://www.mlbstatic.com/team-logos/{team_id}.svg')
         return jsonify(filtered_teams.to_dict(orient='records'))
 
     teams_endpoint_url = f'https://statsapi.mlb.com/api/v1/teams' + (f'?leagueId={league_id}' if league_id else '')
     teams = process_endpoint_url(teams_endpoint_url, 'teams')
+    teams['logo'] = teams['id'].apply(lambda team_id: f'https://www.mlbstatic.com/team-logos/{team_id}.svg')
+
     return jsonify(teams.to_dict(orient='records'))
 
 @app.route('/team', methods=['GET'])
@@ -21,6 +24,7 @@ def get_team():
     team_id = request.args.get('teamId', '')
     team_endpoint_url = f'https://statsapi.mlb.com/api/v1/teams/{team_id}'
     team = process_endpoint_url(team_endpoint_url, 'teams')
+    team['logo']=f'https://www.mlbstatic.com/team-logos/{team_id}.svg'
     return jsonify(team.to_dict(orient='records'))
 
 
