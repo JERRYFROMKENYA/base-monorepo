@@ -17,6 +17,7 @@ def get_teams():
     teams = process_endpoint_url(teams_endpoint_url, 'teams')
     for index, row in teams.iterrows():
         teams.at[index, 'logo'] = f'https://www.mlbstatic.com/team-logos/{row["id"]}.svg'
+        #for loop
 
     return jsonify(teams.to_dict(orient='records'))
 
