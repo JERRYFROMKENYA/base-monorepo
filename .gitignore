@@ -30,3 +30,4 @@ Thumbs.db
 /pb/pb_data/logs.db
 /pb/pb_data/backups/
 /pb/pb_data/
+/server_1/app/keys/server1_key.json
