@@ -104,17 +104,35 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
             print(f"Error during embedding generation for input: {filtered_input[:5]} - Error: {e}")
             return [[] for _ in range(len(input))]
 
+
 def create_chroma_db(documents, ids, metadatas, name):
     start_time = time.time()
     chroma_client = chromadb.Client(client_settings)
     try:
-        db = chroma_client.get_collection(name=name, embedding_function=GeminiEmbeddingFunction(), )
+        db = chroma_client.get_collection(name=name, embedding_function=GeminiEmbeddingFunction())
         print(f"Collection '{name}' already exists. Using existing collection.")
     except:
-        db = chroma_client.create_collection(name=name, embedding_function=GeminiEmbeddingFunction(),  metadata={ "hnsw:num_threads": 16})
+        db = chroma_client.create_collection(name=name, embedding_function=GeminiEmbeddingFunction(),
+                                             metadata={"hnsw:num_threads": 16})
         print(f"Collection '{name}' created.")
-    db.add(documents=documents, metadatas=metadatas, ids=ids)
-    print(f"Added {len(documents)} documents to the database.")
+
+    existing_documents = set(db.get()["documents"])
+    new_documents = []
+    new_metadatas = []
+    new_ids = []
+
+    for doc, meta, doc_id in zip(documents, metadatas, ids):
+        if doc not in existing_documents:
+            new_documents.append(doc)
+            new_metadatas.append(meta)
+            new_ids.append(doc_id)
+
+    if new_documents:
+        db.add(documents=new_documents, metadatas=new_metadatas, ids=new_ids)
+        print(f"Added {len(new_documents)} new documents to the database.")
+    else:
+        print("No new documents to add.")
+
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(f"Time taken to generate collection: {elapsed_time:.2f} seconds")
@@ -128,8 +146,21 @@ def query():
     query_text =search
     if not query_text:
         return jsonify({'error': 'Query text is required'}), 400
-    documents = hr_db.query(query_texts=[query_text])
-    return jsonify(documents)
+    documents = hr_db.query(query_texts=[query_text])["metadatas"][0]
+    _data=[]
+    for doc in documents:
+        print(doc)
+        _data.append({
+            'title': doc['title'],
+            'ExitVelocity': doc['ExitVelocity'],
+            'LaunchAngle': doc['LaunchAngle'],
+            'HitDistance': doc['HitDistance'],
+            'video': doc['video'],
+            'season': doc['season'],
+            'play_id': doc['play_id']
+        })
+
+    return jsonify(_data)
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False ,host= "0.0.0.0", port=9000,)

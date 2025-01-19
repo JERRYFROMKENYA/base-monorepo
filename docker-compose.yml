@@ -33,10 +33,10 @@ services:
         condition: service_healthy
     environment:
       - POCKETBASE_URL=http://pocketbase:8090
-      - GENAI_API_KEY
+      - GENAI_API_KEY=
     networks:
       - base_network
-      -
+
   server_2:
     build: ./server_2
     restart: unless-stopped
