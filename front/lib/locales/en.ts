@@ -3,11 +3,18 @@
  */
 
 const English = {
+  all:"All",
+  new: 'New',
+  popular: 'Popular',
+  favorites: 'Favorites',
+  home: 'Home',
   for_you: 'For you',
   fantasy: 'Fantasy',
   statistics: 'Statistics',
   news: 'News',
   predictions: 'Predictions',
+  mlb:"MLB",
+  home_runs:"Home Runs",
   login: 'Log in',
   signup: 'Sign up',
   profile: 'Profile',

@@ -18,12 +18,13 @@ import { adaptNavigationTheme, PaperProvider } from 'react-native-paper'
 import { useRouter } from 'expo-router'
 import { Locales, Setting, StackHeader, Themes } from '@/lib'
 import drawer from '@/app/drawer'
+import { PocketBaseProvider } from '@/lib/data/pocketbase'
 
 // Catch any errors thrown by the Layout component.
 export { ErrorBoundary } from 'expo-router'
 
 // Ensure that reloading on `/modal` keeps a back button present.
-export const unstable_settings = { initialRouteName: 'drawer' }
+export const unstable_settings = { initialRouteName: '(auth)' }
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync()
@@ -104,6 +105,7 @@ const RootLayoutNav = () => {
   })
 
   return (
+    <PocketBaseProvider>
     <ThemeProvider
       value={
         colorScheme === 'light'
@@ -113,9 +115,9 @@ const RootLayoutNav = () => {
     >
       <PaperProvider theme={theme}>
         <Stack
-          initialRouteName={'drawer'}
+          initialRouteName={'(auth)'}
           screenOptions={{
-            animation: 'slide_from_bottom',
+            // animation: 'slide_from_bottom',
             header: (props) => (
               <StackHeader navProps={props} children={undefined} />
             ),
@@ -138,6 +140,7 @@ const RootLayoutNav = () => {
 
       <StatusBar style="auto" />
     </ThemeProvider>
+    </PocketBaseProvider>
   )
 }
 

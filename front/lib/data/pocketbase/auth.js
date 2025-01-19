@@ -6,15 +6,18 @@ import { usePocketBase } from './';
 import {Alert} from "react-native";
 
 const AuthContext = createContext({
-  signIn: (email, password) => {},
+  signIn: (email, password) => {
+    return { error: 'Auth not initialized' };
+  },
   signOut: () => {},
   createAccount: () => {},
   createNewAccount: ({ email, password, passwordConfirm, name }) => {},
   refreshAuth: () => {},
   isLoggedIn: false,
   isInitialized: false,
-  user: {},
-  did:{}
+  user: {
+    email: undefined,
+  },
 });
 
 export function useAuth() {
@@ -40,18 +43,8 @@ function useProtectedRoute(user, isInitialized) {
 
   useEffect(() => {
     if (!isNavigationReady) return;
-    const inAuthGroup = segments[0] === '(auth)' || segments[1] === 'login';
+    const inAuthGroup = segments[0] === '(auth)';
     if (!isInitialized) return;
-
-    if (user && user.is_banned) {
-      router.replace('/(auth)/login');
-    }else
-
-    if (user && (user.settings==null||user.settings.onboarding==null||user.settings.onboarding==false)) {
-      router.replace('/(auth)/onboarding');
-
-    }
-
     if (!user && !inAuthGroup) {
       router.replace('/(auth)/login');
     }
@@ -75,23 +68,6 @@ export function AuthProvider({ children }) {
         setIsInitialized(true);
         if (user) {
 
-          if(user.is_banned){
-            Alert.alert("Account Banned", "Your account has been banned. Contact support for more information")
-            await appSignOut()
-
-          }
-          try {
-            pb.collection('customer_did').getFirstListItem(`user = "${user.id}"`, {
-              sort: 'updated',
-            }).then(did=>{
-              setDid(did.did);
-              console.log(did)
-            })
-
-          } catch (error) {
-            // console.error("Error fetching DID:", error);
-          }
-
         }
       }
     };
@@ -103,13 +79,13 @@ export function AuthProvider({ children }) {
     if (!pb) return { error: 'PocketBase not initialized' };
 
     try {
-      const resp = await pb.collection('users').authWithPassword(email, password);
+      const resp = await pb.collection('user').authWithPassword(email, password);
       setUser(pb.authStore.isValid ? pb.authStore.model : null);
       setIsLoggedIn(pb.authStore.isValid ?? false);
       if(!resp.record.verified){
         Alert.alert("Verify Email", "Please verify your email to continue. Check your email for the verification link.",
           [{
-            text: "Send new Mail",
+            text: "Send Verification Email",
             onPress: async () => {
               await pb.collection('users').requestVerification(resp.record.email);
               Alert.alert("Verification","Verification email sent. Check your email for the verification link.")
@@ -137,25 +113,9 @@ export function AuthProvider({ children }) {
                 }
               },
               style: "cancel"
-            }
-
-          ]
+            }]
         )
         return { user: null };
-      }
-      else if(resp.record.is_banned){
-        Alert.alert("Account Banned", "Your account has been banned. Contact support for more information")
-        try {
-          await pb.authStore.clear();
-          setUser(null);
-          setIsLoggedIn(false);
-          return { user: null };
-        } catch (e) {
-          return { error: e };
-        }
-
-      }else{
-        return { user: resp.record };
       }
     } catch (e) {
       return { error: e };

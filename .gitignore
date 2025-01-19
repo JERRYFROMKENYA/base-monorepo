@@ -33,3 +33,7 @@ Thumbs.db
 /server_1/app/keys/server1_key.json
 
 docker-compose.yml
+
+*/.chromadb/**/*
+*/**/chromadb/**
+

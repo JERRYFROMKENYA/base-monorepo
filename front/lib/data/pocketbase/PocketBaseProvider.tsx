@@ -13,8 +13,6 @@ export const usePocketBase = () => useContext(PocketBaseContext);
 
 export const PocketBaseProvider = ({ children }:any) => {
     const [pb, setPb] = useState();
-
-
     useEffect(() => {
         const initializePocketBase = async () => {
             // This is where our auth session will be stored. It's PocketBase magic.
