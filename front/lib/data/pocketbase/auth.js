@@ -16,7 +16,8 @@ const AuthContext = createContext({
   isLoggedIn: false,
   isInitialized: false,
   user: {
-    email: undefined,
+    email: undefined, id: undefined,
+
   },
 });
 
@@ -87,7 +88,7 @@ export function AuthProvider({ children }) {
           [{
             text: "Send Verification Email",
             onPress: async () => {
-              await pb.collection('users').requestVerification(resp.record.email);
+              await pb.collection('user').requestVerification(resp.record.email);
               Alert.alert("Verification","Verification email sent. Check your email for the verification link.")
               try {
                 await pb.authStore.clear();
@@ -138,7 +139,7 @@ export function AuthProvider({ children }) {
   const createAccount = async ({ email, password, passwordConfirm, name }) => {
     if (!pb) return { error: 'PocketBase not initialized' };
     try {
-      const resp = await pb.collection('users').create({
+      const resp = await pb.collection('user').create({
         email,
         password,
         passwordConfirm,

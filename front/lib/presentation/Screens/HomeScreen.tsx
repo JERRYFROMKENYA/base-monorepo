@@ -1,9 +1,28 @@
-import React, { useEffect } from 'react'
-import { Chip, Surface, Button, SegmentedButtons } from 'react-native-paper'
+import React, { Dispatch, SetStateAction, useEffect } from 'react'
+import { Chip, Surface, SegmentedButtons } from 'react-native-paper'
 import { ScrollView, View } from 'react-native'
-import { Locales, ScreenInfo, styles } from '@/lib'
+import { Locales } from '@/lib'
 
-const HomeCategories = ({ categories }) => {
+interface Category {
+  label: string,
+  icon?: string,
+}
+ interface CategoryProps{
+  categories: Category[]
+ }
+ interface SegmentedButtonData{
+   buttons :{
+     label: string,
+     icon: string,
+     value: string
+   }[]
+   , value: string
+   , onValueChange: Dispatch<SetStateAction<string>>
+ }
+
+
+
+const HomeCategories = ({ categories }:CategoryProps) => {
   const [selectedCategory, setSelectedCategory] = React.useState(2)
   const [isLoading, setIsLoading] = React.useState(true)
 
@@ -20,7 +39,7 @@ const HomeCategories = ({ categories }) => {
           overscrollBehaviorX: "auto"
         }}
       >
-        {categories.map((category: { icon: any; label: any }, index: any) => (
+        {categories.map((category: Category, index: number) => (
           <Chip
             key={index}
             mode={selectedCategory !== index ? 'outlined' : undefined}
@@ -37,7 +56,7 @@ const HomeCategories = ({ categories }) => {
 }
 
 
-const BottomSegmentedButtons = ({ buttons, value, onValueChange }) => {
+const BottomSegmentedButtons = ({ buttons, value, onValueChange }:SegmentedButtonData) => {
   return (
     <View style={{ position: 'absolute', bottom: 0, width: '100%', flexDirection: 'row', justifyContent: 'center', padding: 10 }}>
       <SegmentedButtons
@@ -60,8 +79,8 @@ const HomeScreen = () => {
   ]
 
   const segmentedButtons = [
-    { label: "Recent", icon: "clock", value: "recent" },
-    { label: "Suggested", icon: "star", value: "suggested" },
+    { label: Locales.t("recent"), icon: "clock", value: "recent" },
+    { label: Locales.t("suggested"), icon: "star", value: "suggested" },
   ]
 
   const [selectedValue, setSelectedValue] = React.useState('')

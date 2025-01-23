@@ -3,6 +3,8 @@
  */
 
 const English = {
+  recent:"Recent",
+  suggested:"Suggested",
   all:"All",
   new: 'New',
   popular: 'Popular',

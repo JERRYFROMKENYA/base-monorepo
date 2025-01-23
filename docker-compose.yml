@@ -12,11 +12,11 @@ services:
       - ./pb/pb_data:/pb/pb_data
       - ./pb/pb_public:/pb/pb_public
       - ./pb/pb_hooks:/pb/pb_hooks
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
-      interval: 5s
-      timeout: 5s
-      retries: 5
+#    healthcheck:
+#      test: wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
+#      interval: 5s
+#      timeout: 5s
+#      retries: 5
     networks:
       - base_network
 
@@ -33,7 +33,7 @@ services:
         condition: service_healthy
     environment:
       - POCKETBASE_URL=http://pocketbase:8090
-      - GENAI_API_KEY=
+      - GOOGLE_API_KEY=AIzaSyC8q8WkjxMm6KjQpHeGqUYY79Y0T86rEEs
     networks:
       - base_network
 
@@ -62,6 +62,6 @@ services:
         condition: service_healthy
     environment:
       - POCKETBASE_URL=http://pocketbase:8090
-      - GENAI_API_KEY
+      - GENAI_API_KEY=AIzaSyC8q8WkjxMm6KjQpHeGqUYY79Y0T86rEEs
     networks:
       - base_network
