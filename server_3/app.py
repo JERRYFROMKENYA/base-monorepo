@@ -8,6 +8,8 @@ from chromadb.utils.batch_utils import create_batches
 from chromadb.config import Settings
 import time
 
+from numexpr.expressions import double
+
 app = Flask(__name__)
 
 # Configure API key
@@ -20,7 +22,7 @@ client_settings = Settings(
     allow_reset=True,
     is_persistent=True,
 )
-
+chroma_client = chromadb.Client(client_settings)
 
 
 # Load and clean data
@@ -107,7 +109,6 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
 
 def create_chroma_db(documents, ids, metadatas, name):
     start_time = time.time()
-    chroma_client = chromadb.Client(client_settings)
     try:
         db = chroma_client.get_collection(name=name, embedding_function=GeminiEmbeddingFunction())
         print(f"Collection '{name}' already exists. Using existing collection.")
@@ -138,29 +139,90 @@ def create_chroma_db(documents, ids, metadatas, name):
     print(f"Time taken to generate collection: {elapsed_time:.2f} seconds")
     return db
 
-hr_db = create_chroma_db(hr_documents, hr_ids, hr_metadatas, name='mlb_hrs_001')
-
-@app.route('/query', methods=['POST',"GET"])
-def query():
+@app.route('/home_runs', methods=["GET"])
+def home_runs():
+    hr_db = chroma_client.get_collection(name="mlb_hrs_001", embedding_function=GeminiEmbeddingFunction())
     search = request.args.get('q', '').strip('"').strip("'")
-    query_text =search
-    if not query_text:
-        return jsonify({'error': 'Query text is required'}), 400
-    documents = hr_db.query(query_texts=[query_text])["metadatas"][0]
-    _data=[]
-    for doc in documents:
-        print(doc)
-        _data.append({
-            'title': doc['title'],
-            'ExitVelocity': doc['ExitVelocity'],
-            'LaunchAngle': doc['LaunchAngle'],
-            'HitDistance': doc['HitDistance'],
-            'video': doc['video'],
-            'season': doc['season'],
-            'play_id': doc['play_id']
-        })
+    season = request.args.get('season', '').strip('"').strip("'")
+    launch_angle = request.args.get('launchAngle', '').strip('"').strip("'")
+    exit_velocity = request.args.get('exitVelocity', '').strip('"').strip("'")
+    hit_distance = request.args.get('hitDistance', '').strip('"').strip("'")
+
+    # Filter out None values from the where statement
+    where_clauses = []
+    if season:
+        where_clauses.append({"season": season})
+    if launch_angle:
+        where_clauses.append({"LaunchAngle": launch_angle})
+    if exit_velocity:
+        where_clauses.append({"ExitVelocity": exit_velocity})
+    if hit_distance:
+        where_clauses.append({"HitDistance": hit_distance})
+
+    where_statement = {"$or": where_clauses} if len(where_clauses) > 1 else {}
+
+    _data = []
+
+    if not search and not where_statement:
+        documents = hr_db.get()["metadatas"]
+        for doc in documents:
+            _data.append({
+                'title': doc['title'],
+                'ExitVelocity': doc['ExitVelocity'],
+                'LaunchAngle': doc['LaunchAngle'],
+                'HitDistance': doc['HitDistance'],
+                'video': doc['video'],
+                'season': doc['season'],
+                'play_id': doc['play_id']
+            })
+    else:
+        documents = hr_db.query(query_texts=[search],
+                                where=where_statement if where_statement else None
+                                )["metadatas"][0]
+        for doc in documents:
+            _data.append({
+                'title': doc['title'],
+                'ExitVelocity': doc['ExitVelocity'],
+                'LaunchAngle': doc['LaunchAngle'],
+                'HitDistance': doc['HitDistance'],
+                'video': doc['video'],
+                'season': doc['season'],
+                'play_id': doc['play_id']
+            })
 
     return jsonify(_data)
+
+
+@app.route('/home_run', methods=["GET"])
+def query():
+    hr_db=chroma_client.get_collection(name="mlb_hrs_001", embedding_function=GeminiEmbeddingFunction())
+    query_text = request.args.get('playId', '').strip('"').strip("'")
+
+
+    _data=[]
+    if query_text:
+        documents = hr_db.query(where={"play_id":query_text})["metadatas"][0]
+        for doc in documents:
+            print(doc)
+            _data.append({
+                'title': doc['title'],
+                'ExitVelocity': doc['ExitVelocity'],
+                'LaunchAngle': doc['LaunchAngle'],
+                'HitDistance': doc['HitDistance'],
+                'video': doc['video'],
+                'season': doc['season'],
+                'play_id': doc['play_id']
+            })
+
+
+
+    return jsonify(_data)
+
+@app.route('/generate_hr_data', methods=['GET'])
+def generate_hr_data():
+    _data=[]
+    hr_db = create_chroma_db(hr_documents, hr_ids, hr_metadatas, name='mlb_hrs_001')
+    return jsonify(hr_db.get_model())
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False ,host= "0.0.0.0", port=9000,)

@@ -39,14 +39,11 @@ summary_config=genai.GenerationConfig(
 #prompt for analysis
 analysis_system_prompt = """
 You are a baseball analysis system that provides detailed and 
-structured information about baseball games. 
-Your job is to analyze the provided 
+structured information about baseball games. Your job is to analyze the provided 
 video and extract key details about the game, including player statistics, game events, 
-and environmental conditions. Return the information in the following structured format. 
-Give them in details. Always return all the data in the schema. If the data is missing, give "none" as the return value.
-You analyze the provided baseball video at 1 frame per second and extract key details.
+and environmental conditions. Return the information in the following structured format. Give them in details.
 
-Return:
+:
 {
   "pitchSpeed": "Speed of the pitch in miles per hour or kilometers per hour",
   "inningNumber": "The inning number in which the event occurred",
@@ -58,28 +55,18 @@ Return:
   "hardHit": "Indicator if the ball was hit hard",
   "pitchMovement": "Description of the pitch movement",
   "spinRate": "Spin rate of the pitch in revolutions per minute",
+  "popTime": "Time taken for the catcher to throw the ball to a base",
+  "exitVelocity": "Speed of the ball after it is hit",
+  "launchAngle": "Angle at which the ball leaves the bat",
+  "jump": "Reaction time of the fielder",
+  "fieldRunValue": "Value indicating the fielder's performance",
+  "catchProbability": "Probability of the fielder making a catch",
   "playDescription": "Description of the play",
   "playerNames": ["List of player names involved in the play"],
   "gameScore": "Current score of the game",
   "gameTime": "Time of the game",
-  "weatherConditions": "Weather conditions during the game",
-  teamNames: ["List of team names involved in the play"]
-  score: "Current score of the game"
+  "weatherConditions": "Weather conditions during the game"
 }
-
-e.g:
-{
-  "pitchSpeed": "91 mph",
-  "pitcher": "none",
-  "playDescription": "John Jaso hits a home run to right center field.",
-  "playerNames": ["John Jaso", "Roman Quinn"],
-  "sprintSpeed": "none",
-   "weatherConditions": "none",
-    "teamName":["PIT","PHI"],
-    "score":["2","1"]
-
-  }
-
 """
 #analysis schema
 class BaseballVideoSchema(typing.TypedDict):
@@ -96,16 +83,14 @@ class BaseballVideoSchema(typing.TypedDict):
     popTime: str  # Time taken for the catcher to throw the ball to a base
     exitVelocity: str  # Speed of the ball after it is hit
     launchAngle: str  # Angle at which the ball leaves the bat
+    jump: str  # Reaction time of the fielder
+    fieldRunValue: str  # Value indicating the fielder's performance
+    catchProbability: str  # Probability of the fielder making a catch
     playDescription: str  # Description of the play
     playerNames: typing.List[str]  # List of player names involved in the play
     gameScore: str  # Current score of the game
     gameTime: str  # Time of the game
     weatherConditions: str  # Weather conditions during the game
-    teamName: typing.List[str]  # List of team names involved in the play
-    score: typing.List[str]  # Current score of the game
-
-
-
 #analysis config
 analysis_config=genai.GenerationConfig(
     response_mime_type="application/json",
@@ -194,7 +179,7 @@ def analyze_video():
     if video_file.state.name == "FAILED":
         return jsonify({"error": "Video processing failed"}), 500
 
-    model = genai.GenerativeModel(model_name="models/gemini-2.0-flash-exp",
+    model = genai.GenerativeModel(model_name="models/gemini-1.5-pro",
                                   system_instruction=analysis_system_prompt,
                                   generation_config=analysis_config)
 
@@ -204,5 +189,3 @@ def analyze_video():
     os.remove(path)
 
     return jsonify(result_data)
-
-

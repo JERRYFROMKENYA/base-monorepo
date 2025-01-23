@@ -18,7 +18,7 @@ const DrawerLayout = () => {
             navProps={props}
             showDivider={false}
             children={undefined}
-            title="Base"
+            title="{User's Name}"
           />
         )}
         screenOptions={{

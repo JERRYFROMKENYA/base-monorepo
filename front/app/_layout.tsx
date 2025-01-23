@@ -19,6 +19,7 @@ import { useRouter } from 'expo-router'
 import { Locales, Setting, StackHeader, Themes } from '@/lib'
 import drawer from '@/app/drawer'
 import { PocketBaseProvider } from '@/lib/data/pocketbase'
+import { AuthProvider } from '@/lib/data/pocketbase/auth'
 
 // Catch any errors thrown by the Layout component.
 export { ErrorBoundary } from 'expo-router'
@@ -106,6 +107,7 @@ const RootLayoutNav = () => {
 
   return (
     <PocketBaseProvider>
+      <AuthProvider>
     <ThemeProvider
       value={
         colorScheme === 'light'
@@ -140,6 +142,7 @@ const RootLayoutNav = () => {
 
       <StatusBar style="auto" />
     </ThemeProvider>
+      </AuthProvider>
     </PocketBaseProvider>
   )
 }
