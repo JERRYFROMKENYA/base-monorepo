@@ -11,6 +11,7 @@ const Layout = () => (
   >
     <Stack.Screen name="login" options={{ title: Locales.t('login'), headerShown: false , headerBackVisible: false, }} />
     <Stack.Screen name="signup" options={{ title: Locales.t('signup') }} />
+    <Stack.Screen name={"onboarding"} options={{ title: Locales.t('lets_get_started') }} />
   </Stack>
 )
 

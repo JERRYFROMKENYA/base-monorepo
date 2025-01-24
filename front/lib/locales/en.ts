@@ -18,6 +18,7 @@ const English = {
   mlb:"MLB",
   home_runs:"Home Runs",
   login: 'Log in',
+  lets_get_started: 'Let\'s get started',
   signup: 'Sign up',
   profile: 'Profile',
   options: 'Options',

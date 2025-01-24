@@ -46,7 +46,7 @@ export default function AuthScreen() {
       setError(result.error);
     } else {
       console.log("Logged in successfully");
-      router.replace("/drawer/");
+      router.replace("/drawer");
     }
   };
 
@@ -56,8 +56,7 @@ export default function AuthScreen() {
       console.error(result.error);
     } else {
       console.log("Account created successfully");
-      const record = await pb.collection('user').update(user.id, {username});
-      router.replace("/drawer/");
+      router.replace("/(auth)/onboarding");
 
     }
   };

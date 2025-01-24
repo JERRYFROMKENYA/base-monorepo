@@ -49,6 +49,8 @@ function useProtectedRoute(user, isInitialized) {
     if (!user && !inAuthGroup) {
       router.replace('/(auth)/login');
     }
+    if(!user.onBoarded && !inAuthGroup) router.replace('/(auth)/onboarding')
+
   }, [user, segments, isNavigationReady, isInitialized]);
 }
 

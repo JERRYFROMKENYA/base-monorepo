@@ -39,23 +39,61 @@ interface Team {
   venue_name: string;
 }
 
-
-
 export async function getAllTeams() {
-  const response = await fetch(`${DATA_URL_1}/teams`);
-  const teams: Team[] = await response.json();
-
-  return teams;
+  try {
+    const response = await fetch(`${DATA_URL_1}/teams`);
+    const text = await response.text();
+    console.log('Raw response:', text);
+    const sanitizedText = text.replace(/NaN/g, 'null');
+    const teams: Team[] = JSON.parse(sanitizedText);
+    return teams;
+  } catch (error) {
+    console.error('Error fetching all teams:', error);
+    throw error;
+  }
 }
 
 export async function getTeamById(Id: string) {
-  const response = await fetch(`${DATA_URL_1}/teams?teamId=${Id}`);
-  const team: Team = await response.json();
-  return team;
+  try {
+    const response = await fetch(`${DATA_URL_1}/teams?teamId=${Id}`);
+    const text = await response.text();
+    console.log('Raw response:', text);
+    const sanitizedText = text.replace(/NaN/g, 'null');
+    const team: Team = JSON.parse(sanitizedText);
+    return team;
+  } catch (error) {
+    console.error(`Error fetching team by Id ${Id}:`, error);
+    throw error;
+  }
+}
+
+export async function getTeamsByLeagueId(Id: string[]) {
+  let teams: Team[] = [];
+  for (let leagueId of Id) {
+    try {
+      const response = await fetch(`${DATA_URL_1}/teams?leagueId=${leagueId}`);
+      const text = await response.text();
+      console.log('Raw response:', text);
+      const sanitizedText = text.replace(/NaN/g, 'null');
+      const team: Team = JSON.parse(sanitizedText);
+      teams.push(team);
+    } catch (error) {
+      console.error(`Error fetching teams for leagueId ${leagueId}:`, error);
+    }
+  }
+  return teams;
 }
 
 export async function searchTeams(search: string) {
-  const response = await fetch(`${DATA_URL_1}/teams?q=${search}`);
-  const teams: Team[] = await response.json();
-  return teams;
+  try {
+    const response = await fetch(`${DATA_URL_1}/teams?q=${search}`);
+    const text = await response.text();
+    console.log('Raw response:', text);
+    const sanitizedText = text.replace(/NaN/g, 'null');
+    const teams: Team[] = JSON.parse(sanitizedText);
+    return teams;
+  } catch (error) {
+    console.error(`Error searching teams with query ${search}:`, error);
+    throw error;
+  }
 }

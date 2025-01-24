@@ -20,11 +20,21 @@ def load_newline_delimited_json(url):
         print(f"An unexpected error occurred: {e}")
         return None
 
+
 def process_endpoint_url(endpoint_url, pop_key=None):
     json_result = requests.get(endpoint_url).content
     data = json.loads(json_result)
+
+    if not data:
+        return pd.DataFrame()
+
     if pop_key:
-        df_result = pd.json_normalize(data.pop(pop_key), sep='_')
+        if pop_key in data:
+            df_result = pd.json_normalize(data.pop(pop_key), sep='_')
+        else:
+            print(f"Key '{pop_key}' not found in the data.")
+            return data
     else:
         df_result = pd.json_normalize(data)
+
     return df_result
