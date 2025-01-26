@@ -173,6 +173,7 @@ def home_runs():
                 'play_id': doc['play_id']
             })
     else:
+        print(where_statement)
         documents = hr_db.query(query_texts=[search],
                                 where=where_statement if where_statement else None
                                 )["metadatas"][0]
