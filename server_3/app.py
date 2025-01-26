@@ -96,8 +96,8 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
                 task_type="retrieval_document",
                 title=title,
             )["embedding"]
-            if not isinstance(embeddings[0], list) or not all(isinstance(x, (int, float)) for x in embeddings[0]):
-                embeddings = [[] for _ in range(len(input))]
+            if not isinstance(embeddings, list) or not embeddings or not isinstance(embeddings[0], list):
+                return [[] for _ in range(len(input))]
             return embeddings
         except Exception as e:
             print(f"Error during embedding generation for input: {filtered_input[:5]} - Error: {e}")
@@ -144,48 +144,40 @@ def home_runs():
     launch_angle = request.args.get('launchAngle', '').strip('"').strip("'")
     exit_velocity = request.args.get('exitVelocity', '').strip('"').strip("'")
     hit_distance = request.args.get('hitDistance', '').strip('"').strip("'")
+    sort_by = request.args.get('sortBy', 'ExitVelocity').strip('"').strip("'")  # Default sort by ExitVelocity
 
-    # Filter out None values from the where statement
-    where_clauses = []
-    if season:
-        where_clauses.append({"season": season})
-        where_clauses.append({"LaunchAngle": 0})
-    if launch_angle:
-        where_clauses.remove({"LaunchAngle": 0})
-        where_clauses.append({"LaunchAngle": launch_angle})
-    if exit_velocity:
-        where_clauses.append({"ExitVelocity": exit_velocity})
-    if hit_distance:
-        where_clauses.append({"HitDistance": hit_distance})
+    # Fetch all documents
+    documents = hr_db.get()["metadatas"]
 
-    where_statement = {"$or": where_clauses} if where_clauses else {}
+    # Filter documents based on search and where clauses
+    filtered_documents = []
+    for doc in documents:
+        if search and search.lower() not in doc['title'].lower():
+            continue
+        if season and doc['season'] != season:
+            continue
+        if launch_angle and str(doc['LaunchAngle']) != launch_angle:
+            continue
+        if exit_velocity and str(doc['ExitVelocity']) != exit_velocity:
+            continue
+        if hit_distance and str(doc['HitDistance']) != hit_distance:
+            continue
+        filtered_documents.append(doc)
+
+    # Sort documents based on the sort_by parameter
+    sorted_documents = sorted(filtered_documents, key=lambda x: x.get(sort_by, 0), reverse=True)
 
     _data = []
-
-    if not search and not where_statement:
-        documents = hr_db.get()["metadatas"]
-        for doc in documents:
-            _data.append({
-                'title': doc['title'],
-                'ExitVelocity': doc['ExitVelocity'],
-                'LaunchAngle': doc['LaunchAngle'],
-                'HitDistance': doc['HitDistance'],
-                'video': doc['video'],
-                'season': doc['season'],
-                'play_id': doc['play_id']
-            })
-    else:
-        documents = hr_db.query(query_texts=[search], where=where_statement if where_statement else None)["metadatas"]
-        for doc in documents:
-            _data.append({
-                'title': doc['title'],
-                'ExitVelocity': doc['ExitVelocity'],
-                'LaunchAngle': doc['LaunchAngle'],
-                'HitDistance': doc['HitDistance'],
-                'video': doc['video'],
-                'season': doc['season'],
-                'play_id': doc['play_id']
-            })
+    for doc in sorted_documents:
+        _data.append({
+            'title': doc['title'],
+            'ExitVelocity': doc['ExitVelocity'],
+            'LaunchAngle': doc['LaunchAngle'],
+            'HitDistance': doc['HitDistance'],
+            'video': doc['video'],
+            'season': doc['season'],
+            'play_id': doc['play_id']
+        })
 
     return jsonify(_data)
 
