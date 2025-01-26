@@ -149,7 +149,9 @@ def home_runs():
     where_clauses = []
     if season:
         where_clauses.append({"season": season})
+        where_clauses.append({"LaunchAngle": 0})
     if launch_angle:
+        where_clauses.remove({"LaunchAngle": 0})
         where_clauses.append({"LaunchAngle": launch_angle})
     if exit_velocity:
         where_clauses.append({"ExitVelocity": exit_velocity})
