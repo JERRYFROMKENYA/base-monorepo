@@ -219,7 +219,7 @@ def query():
 def generate_hr_data():
     _data=[]
     hr_db = create_chroma_db(hr_documents, hr_ids, hr_metadatas, name='mlb_hrs_001')
-    return jsonify({"model":hr_db.get_model()})
+    return jsonify(dict(hr_db.get_model()))
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False ,host= "0.0.0.0", port=9000,)
