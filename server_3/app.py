@@ -15,7 +15,7 @@ genai.configure(api_key=API_KEY)
 
 # Define a custom settings object with a timeout parameter
 client_settings = Settings(
-    persist_directory=".chromadb",
+    persist_directory="chromadb",
     allow_reset=True,
     is_persistent=True,
 )
