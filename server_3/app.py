@@ -4,11 +4,8 @@ import pandas as pd
 import chromadb
 import google.generativeai as genai
 from chromadb import Documents, EmbeddingFunction, Embeddings
-from chromadb.utils.batch_utils import create_batches
 from chromadb.config import Settings
 import time
-
-from numexpr.expressions import double
 
 app = Flask(__name__)
 

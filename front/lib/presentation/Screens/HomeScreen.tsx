@@ -88,6 +88,9 @@ const HomeScreen = () => {
   return (
     <Surface style={{ flex: 1, gap: 16, padding: 10, alignItems: 'center', justifyContent: 'flex-start' }}>
       <HomeCategories categories={categories} />
+      <ScrollView style={{height:"90%"}}>
+
+      </ScrollView>
       <BottomSegmentedButtons
         buttons={segmentedButtons}
         value={selectedValue}

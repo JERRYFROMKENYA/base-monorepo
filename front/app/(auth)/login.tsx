@@ -33,7 +33,7 @@ export default function AuthScreen() {
   const [error, setError] = useState("");
 
   const handlePasswordReset = async () => {
-    await pb.collection('users').requestPasswordReset(resetEmail).then((res) => {
+    await pb.collection('user').requestPasswordReset(resetEmail).then((res) => {
       Alert.alert("Password Reset", "Password reset email sent successfully, check your Inbox");
     });
   };
@@ -83,7 +83,7 @@ export default function AuthScreen() {
           justifyContent: "space-between"
         }}>
 
-          <Text variant={"headlineLarge"} style={{ alignSelf: "flex-start", marginLeft: 20, marginBottom: 20, fontWeight:"bold", fontSize:30 }}>{isLogin&&!isPasswordReset ? "Login" : !isPasswordReset? "Sign Up" : "Forgot Password"}</Text>
+          <Text variant={"headlineLarge"} style={{ alignSelf: "flex-start", marginLeft: 0, marginBottom: 20}}>{isLogin&&!isPasswordReset ? "Login" : !isPasswordReset? "Sign Up" : "Forgot Password"}</Text>
           {error && <Text style={{ color: "red", alignSelf: "center", marginBottom:12 }}>{String(error).split(":")[1]}</Text>}
           {isPasswordReset ? (
             <>

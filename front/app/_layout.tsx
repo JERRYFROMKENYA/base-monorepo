@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono'
-import { NotoSans_400Regular } from '@expo-google-fonts/noto-sans'
+import {Ubuntu_400Regular} from '@expo-google-fonts/ubuntu'
 
 import {
   DarkTheme as NavDarkTheme,
@@ -32,7 +32,7 @@ SplashScreen.preventAutoHideAsync()
 
 const RootLayout = () => {
   const [loaded, error] = useFonts({
-    NotoSans_400Regular,
+    Ubuntu_400Regular,
     JetBrainsMono_400Regular,
     ...MaterialCommunityIcons.font,
   })

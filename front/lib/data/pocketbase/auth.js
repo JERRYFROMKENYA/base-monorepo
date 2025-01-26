@@ -49,7 +49,7 @@ function useProtectedRoute(user, isInitialized) {
     if (!user && !inAuthGroup) {
       router.replace('/(auth)/login');
     }
-    if(!user.onBoarded && !inAuthGroup) router.replace('/(auth)/onboarding')
+    // if(user && !user?.isOnboarded && !inAuthGroup) router.replace('/(auth)/onboarding')
 
   }, [user, segments, isNavigationReady, isInitialized]);
 }
@@ -92,28 +92,14 @@ export function AuthProvider({ children }) {
             onPress: async () => {
               await pb.collection('user').requestVerification(resp.record.email);
               Alert.alert("Verification","Verification email sent. Check your email for the verification link.")
-              try {
-                await pb.authStore.clear();
-                setUser(null);
-                setIsLoggedIn(false);
-                return { user: null };
-              } catch (e) {
-                return { error: e };
-              }
+
             }
           },
             {
               text: "Cancel",
               onPress: async () => {
                 console.log("Cancel Pressed")
-                try {
-                  await pb.authStore.clear();
-                  setUser(null);
-                  setIsLoggedIn(false);
-                  return {user: null};
-                } catch (e) {
-                  return {error: e};
-                }
+
               },
               style: "cancel"
             }]

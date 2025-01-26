@@ -53,18 +53,19 @@ export async function getAllTeams() {
   }
 }
 
-export async function getTeamById(Id: string) {
-  try {
-    const response = await fetch(`${DATA_URL_1}/teams?teamId=${Id}`);
-    const text = await response.text();
-    console.log('Raw response:', text);
-    const sanitizedText = text.replace(/NaN/g, 'null');
-    const team: Team = JSON.parse(sanitizedText);
-    return team;
-  } catch (error) {
-    console.error(`Error fetching team by Id ${Id}:`, error);
-    throw error;
-  }
+export function getTeamById(Id: string) {
+  return fetch(`${DATA_URL_1}/teams?teamId=${Id}`)
+    .then(response => response.text())
+    .then(text => {
+      console.log('Raw response:', text);
+      const sanitizedText = text.replace(/NaN/g, 'null');
+      const team: Team = JSON.parse(sanitizedText);
+      return team;
+    })
+    .catch(error => {
+      console.error(`Error fetching team by Id ${Id}:`, error);
+      throw error;
+    });
 }
 
 export async function getTeamsByLeagueId(Id: string[]) {
@@ -75,8 +76,10 @@ export async function getTeamsByLeagueId(Id: string[]) {
       const text = await response.text();
       console.log('Raw response:', text);
       const sanitizedText = text.replace(/NaN/g, 'null');
-      const team: Team = JSON.parse(sanitizedText);
-      teams.push(team);
+      const team: Team[] = JSON.parse(sanitizedText);
+      for (let t of team) {
+        teams.push(t);
+      }
     } catch (error) {
       console.error(`Error fetching teams for leagueId ${leagueId}:`, error);
     }

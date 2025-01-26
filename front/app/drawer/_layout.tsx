@@ -5,10 +5,12 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { Appbar, Menu, Tooltip, useTheme } from 'react-native-paper'
 
 import { DrawerContent, DrawerHeader, Locales } from '@/lib'
+import { useAuth } from '@/lib/data/pocketbase/auth'
 
 const DrawerLayout = () => {
   const theme = useTheme()
   const [visible, setVisible] = React.useState(false)
+  const {user,signOut} = useAuth()
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -16,9 +18,9 @@ const DrawerLayout = () => {
         drawerContent={(props) => (
           <DrawerContent
             navProps={props}
-            showDivider={false}
+            showDivider={true}
             children={undefined}
-            title="{User's Name}"
+            title={`${user?.name}`}
           />
         )}
         screenOptions={{
@@ -88,6 +90,12 @@ const DrawerLayout = () => {
                   <Appbar.Action
                     icon="magnify"
                     onPress={() => router.push('/search')}
+                  />
+                </Tooltip>
+                <Tooltip title={Locales.t('search')}>
+                  <Appbar.Action
+                    icon="account-minus"
+                    onPress={() => signOut()}
                   />
                 </Tooltip>
                 <Tooltip title={Locales.t('titleSettings')}>

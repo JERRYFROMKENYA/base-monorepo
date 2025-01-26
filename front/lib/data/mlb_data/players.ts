@@ -61,7 +61,7 @@ export async function searchPlayers(search: string) {
 
 export async function getPlayersByTeamId(Id: string) {
   try {
-    const response = await fetch(`${DATA_URL_1}/team_roster?teamId=${Id}`);
+    const response = await fetch(`${DATA_URL_1}/players?teamId=${Id}`);
     const text = await response.text();
     console.log('Raw response:', text);
     const sanitizedText = text.replace(/NaN/g, 'null');
@@ -71,4 +71,28 @@ export async function getPlayersByTeamId(Id: string) {
     console.error(`Error fetching players for teamId ${Id}:`, error);
     throw error;
   }
+}
+
+export async function getPlayersByTeamIds(Id: string[]) {
+  let players = [];
+  for (let teamId of Id) {
+    try {
+      const response = await fetch(`${DATA_URL_1}/team_roster?teamId=${teamId}`);
+      const text = await response.text();
+      console.log('Raw response:', text);
+      const sanitizedText = text.replace(/NaN/g, 'null');
+      const data = JSON.parse(sanitizedText);
+      for(let player of data) {
+        players.push(player);
+      }
+    } catch (error) {
+      console.error(`Error fetching players for teamId ${teamId}:`, error);
+    }
+  }
+  return players;
+}
+
+
+export function getPlayerHeadShotUrl(playerId: string) {
+  return `https://securea.mlb.com/mlb/images/players/head_shot/${playerId}.jpg`;
 }

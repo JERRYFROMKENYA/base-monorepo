@@ -60,6 +60,21 @@ const English = {
   lime: 'lime',
   olive: 'olive',
   brown: 'brown',
+  pickYourLanguage:"Pick your language",
+  pickYourSports:"Pick your sports",
+  pickYourLeagues:"Pick your leagues",
+  pickYourTeams:"Pick your teams",
+  pickYourPlayers:"Pick your players",
+  settingUpSubText:"We are setting up Base for you please wait...",
+  back:"Back",
+  next:"Next",
+  finish:"Finish",
+  pickSportError:"Please pick at least one sport",
+  failedTofetchLeague:"Failed to fetch leagues",
+  failedTofetchTeams:"Failed to fetch teams",
+  failedTofetchPlayers:"Failed to fetch players",
+
+
 }
 
 export default English
