@@ -156,7 +156,7 @@ def home_runs():
     if hit_distance:
         where_clauses.append({"HitDistance": hit_distance})
 
-    where_statement = {"$or": where_clauses} if len(where_clauses) > 1 else {}
+    where_statement = {"$or": where_clauses} if where_clauses else {}
 
     _data = []
 
@@ -173,10 +173,7 @@ def home_runs():
                 'play_id': doc['play_id']
             })
     else:
-        print(where_statement)
-        documents = hr_db.query(query_texts=[search],
-                                where=where_statement if where_statement else None
-                                )["metadatas"][0]
+        documents = hr_db.query(query_texts=[search], where=where_statement if where_statement else None)["metadatas"]
         for doc in documents:
             _data.append({
                 'title': doc['title'],
@@ -189,7 +186,6 @@ def home_runs():
             })
 
     return jsonify(_data)
-
 
 @app.route('/home_run', methods=["GET"])
 def query():
