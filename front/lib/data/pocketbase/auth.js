@@ -70,7 +70,7 @@ export function AuthProvider({ children }) {
         setUser(isLoggedIn ? pb.authStore.model : null);
         setIsInitialized(true);
         if (user) {
-
+          router.replace("/drawer")
         }
       }
     };

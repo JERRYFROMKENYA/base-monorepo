@@ -29,7 +29,8 @@ const DrawerLayout = () => {
             paddingTop: 64,
           },
           header: (props) => (
-            <DrawerHeader navProps={props} children={undefined} />
+            <DrawerHeader
+              navProps={props} children={undefined} />
           ),
         }}
       >
@@ -80,6 +81,31 @@ const DrawerLayout = () => {
           }}
         />
         <Drawer.Screen
+          name="for_you"
+
+          options={{
+            drawerLabel: Locales.t('home_runs'),
+            title: Locales.t('home_runs'),
+           // headerShown:false,
+            headerRight: () => (
+              <>
+                <Tooltip title={Locales.t('search')}>
+                  <Appbar.Action
+                    icon="magnify"
+                    onPress={() => router.push('/search')}
+                  />
+                </Tooltip>
+                <Tooltip title={Locales.t('titleSettings')}>
+                  <Appbar.Action
+                    icon="youtube-subscription"
+                    onPress={() => router.push('/drawer/settings')}
+                  />
+                </Tooltip>
+              </>
+            ),
+          }}
+        />
+        <Drawer.Screen
           name="profile"
           options={{
             drawerLabel: Locales.t('profile'),
@@ -108,29 +134,7 @@ const DrawerLayout = () => {
             ),
           }}
         />
-        <Drawer.Screen
-          name="for_you"
-          options={{
-            drawerLabel: Locales.t('for_you'),
-            title: Locales.t('for_you'),
-            headerRight: () => (
-              <>
-                <Tooltip title={Locales.t('search')}>
-                  <Appbar.Action
-                    icon="magnify"
-                    onPress={() => router.push('/search')}
-                  />
-                </Tooltip>
-                <Tooltip title={Locales.t('titleSettings')}>
-                  <Appbar.Action
-                    icon="youtube-subscription"
-                    onPress={() => router.push('/drawer/settings')}
-                  />
-                </Tooltip>
-              </>
-            ),
-          }}
-        />
+
         <Drawer.Screen
           name="settings"
           options={{

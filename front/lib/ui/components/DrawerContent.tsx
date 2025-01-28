@@ -11,11 +11,6 @@ interface DrawerContentProps extends DrawerSectionProps {
 
 const DrawerContent = (props: DrawerContentProps) => (
   <Drawer.Section {...props}>
-    {/*<Drawer.Item*/}
-    {/*  label={Locales.t('goHome')}*/}
-    {/*  icon="arrow-left"*/}
-    {/*  onPress={() => router.replace('/')}*/}
-    {/*/>*/}
     <Drawer.Item
       label={Locales.t('titleHome')}
       icon="baseball"
@@ -23,17 +18,11 @@ const DrawerContent = (props: DrawerContentProps) => (
       onPress={() => router.push('/drawer')}
     />
       <Drawer.Item
-        label={Locales.t('for_you')}
+        label={Locales.t('home_runs')}
         icon="book-play"
         active={props.navProps.state.index === 1}
         onPress={() => router.push('/drawer/for_you')}
       />
-    <Drawer.Item
-      label={Locales.t('fantasy')}
-      icon="baseball-diamond"
-      active={props.navProps.state.index === 2}
-      onPress={() => router.push('/drawer/fantasy')}
-    />
     <Drawer.Item
       label={Locales.t('news')}
       icon="newspaper"

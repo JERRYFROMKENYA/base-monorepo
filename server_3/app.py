@@ -145,6 +145,8 @@ def home_runs():
     exit_velocity = request.args.get('exitVelocity', '').strip('"').strip("'")
     hit_distance = request.args.get('hitDistance', '').strip('"').strip("'")
     sort_by = request.args.get('sortBy', 'ExitVelocity').strip('"').strip("'")  # Default sort by ExitVelocity
+    page = int(request.args.get('page', 1))
+    page_size = int(request.args.get('pageSize', 10))
 
     # Fetch all documents
     documents = hr_db.get()["metadatas"]
@@ -167,8 +169,13 @@ def home_runs():
     # Sort documents based on the sort_by parameter
     sorted_documents = sorted(filtered_documents, key=lambda x: x.get(sort_by, 0), reverse=True)
 
+    # Apply pagination
+    start = (page - 1) * page_size
+    end = start + page_size
+    paginated_documents = sorted_documents[start:end]
+
     _data = []
-    for doc in sorted_documents:
+    for doc in paginated_documents:
         _data.append({
             'title': doc['title'],
             'ExitVelocity': doc['ExitVelocity'],
@@ -183,15 +190,19 @@ def home_runs():
 
 @app.route('/home_run', methods=["GET"])
 def query():
-    hr_db=chroma_client.get_collection(name="mlb_hrs_001", embedding_function=GeminiEmbeddingFunction())
+    hr_db = chroma_client.get_collection(name="mlb_hrs_001", embedding_function=GeminiEmbeddingFunction())
     query_text = request.args.get('playId', '').strip('"').strip("'")
+    page = int(request.args.get('page', 1))
+    page_size = int(request.args.get('pageSize', 10))
 
-
-    _data=[]
+    _data = []
     if query_text:
-        documents = hr_db.query(where={"play_id":query_text})["metadatas"][0]
-        for doc in documents:
-            print(doc)
+        documents = hr_db.query(where={"play_id": query_text})["metadatas"]
+        start = (page - 1) * page_size
+        end = start + page_size
+        paginated_documents = documents[start:end]
+
+        for doc in paginated_documents:
             _data.append({
                 'title': doc['title'],
                 'ExitVelocity': doc['ExitVelocity'],
@@ -201,8 +212,6 @@ def query():
                 'season': doc['season'],
                 'play_id': doc['play_id']
             })
-
-
 
     return jsonify(_data)
 

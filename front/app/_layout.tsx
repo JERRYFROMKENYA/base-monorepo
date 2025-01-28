@@ -117,7 +117,7 @@ const RootLayoutNav = () => {
     >
       <PaperProvider theme={theme}>
         <Stack
-          initialRouteName={'(auth)'}
+          initialRouteName={'drawer'}
           screenOptions={{
             // animation: 'slide_from_bottom',
             header: (props) => (
@@ -136,7 +136,10 @@ const RootLayoutNav = () => {
           <Stack.Screen
             name="modal"
             options={{ title: Locales.t('titleModal'), presentation: 'modal' }}
-          />
+          /><Stack.Screen
+          name="index"
+          options={{headerShown:false}}
+        />
         </Stack>
       </PaperProvider>
 
