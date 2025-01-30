@@ -27,7 +27,7 @@ export async function getTeamPlayers(url:string){
   }
 }
 
-export async function getHomeRunByPlayId(playId){
+export async function getHomeRunByPlayId(playId:string){
   try {
     console.log(playId)
     const response = await fetch(`${VIDEOS_URL_1}/home_runs?playId=${playId}`);

@@ -569,8 +569,8 @@ def home_runs():
 
     return jsonify(_data)
 
-@app.route('/home_runs', methods=["GET"])
-def home_runs():
+@app.route('/home_run', methods=["GET"])
+def home_run():
     hr_db = chroma_client.get_collection(name="mlb_hrs_001", embedding_function=GeminiEmbeddingFunction())
     documents = hr_db.get()["metadatas"]
     query_text = request.args.get('playId', '').strip('"').strip("'")
