@@ -251,7 +251,7 @@ def get_play_explanation(video_url):
 
     return result_data
 
-def get_teams(video_url):
+def get_teams(video_url,season):
     get_teams_system_prompt = '''
     You are a multimodal system that analyzes videos of baseball at 1 frame per second.
     Your job is to identify the teams playing in the video.
@@ -339,7 +339,7 @@ def get_teams(video_url):
         filtered_teams = teams[teams.apply(lambda row: row.astype(str).str.contains(team_name, case=False, na=False).any(), axis=1)].iloc[0]
         team_id = filtered_teams['id']
         if team_id not in team_rosters:
-            team_roster_endpoint_url = f'https://statsapi.mlb.com/api/v1/teams/{team_id}/roster'
+            team_roster_endpoint_url = f'https://statsapi.mlb.com/api/v1/teams/{team_id}/roster?season={season}'
             team_rosters[team_id] = process_endpoint_url(team_roster_endpoint_url, 'roster')
         team_roster = team_rosters[team_id]
         players_involved = []
@@ -606,7 +606,8 @@ def get_players():
 @app.route('/getTeams', methods=["GET"])
 def get_teams_():
     video_url=request.args.get('videoUrl', '').strip("'").strip('"')
-    return jsonify(get_teams(video_url))
+    season = request.args.get('season', '').strip("'").strip('"')
+    return jsonify(get_teams(video_url,season))
 
 @app.route('/getPlayExplanation', methods=["GET"])
 def get_play():
