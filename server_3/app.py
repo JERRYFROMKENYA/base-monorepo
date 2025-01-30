@@ -569,19 +569,20 @@ def home_runs():
 
     return jsonify(_data)
 
-@app.route('/home_run', methods=["GET"])
-def query():
+@app.route('/home_runs', methods=["GET"])
+def home_runs():
     hr_db = chroma_client.get_collection(name="mlb_hrs_001", embedding_function=GeminiEmbeddingFunction())
+    documents = hr_db.get()["metadatas"]
     query_text = request.args.get('playId', '').strip('"').strip("'")
     page = int(request.args.get('page', 1))
     page_size = int(request.args.get('pageSize', 10))
 
     _data = []
     if query_text:
-        documents = hr_db.query(where={"play_id": query_text})["metadatas"]
+        filtered_documents = [doc for doc in documents if doc.get('play_id') == query_text]
         start = (page - 1) * page_size
         end = start + page_size
-        paginated_documents = documents[start:end]
+        paginated_documents = filtered_documents[start:end]
 
         for doc in paginated_documents:
             _data.append({

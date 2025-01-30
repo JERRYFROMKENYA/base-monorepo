@@ -100,3 +100,5 @@ export async function searchTeams(search: string) {
     throw error;
   }
 }
+
+

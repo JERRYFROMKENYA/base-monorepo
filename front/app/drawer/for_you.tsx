@@ -16,19 +16,26 @@ const ForYou = () => {
   const { user } = useAuth();
   const { pb } = usePocketBase();
 
-  const ITEMS_PER_PAGE = 5;
+  const ITEMS_PER_PAGE = 10;
 
 const fetchVideos = async (page: number) => {
   try {
     setLoading(true);
-    const data = await getHomeRunVideos(page, ITEMS_PER_PAGE);
-    const watchedList = await getWatchedVideos(user, pb);
+
+    // Fetch videos and watched list in parallel
+    const [data, watchedList] = await Promise.all([
+      getHomeRunVideos(page, ITEMS_PER_PAGE),
+      getWatchedVideos(user, pb)
+    ]);
+
     const watchedPlayIds = watchedList.map((video: any) => video.play_id);
 
     const startIndex = (page - 1) * ITEMS_PER_PAGE;
     const filteredData = data
       .filter((video: any) => !watchedPlayIds.includes(video.play_id))
+      .map((video: any, index: number) => ({ ...video, id: startIndex + index }));
 
+    // Use functional state update to avoid unnecessary re-renders
     setVideos((prev) => [...prev, ...filteredData]);
     setLoading(false);
   } catch (error) {
@@ -37,9 +44,15 @@ const fetchVideos = async (page: number) => {
   }
 };
 
-  useEffect(() => {
-    fetchVideos(currentPage);
-  }, [currentPage]);
+useEffect(() => {
+  fetchVideos(currentPage);
+
+  return () => {
+    // Cleanup function to release memory
+    setVideos([]);
+    setActiveIndex(null);
+  };
+}, [currentPage]);
 
   const loadMoreVideos = () => {
     if (!loading && hasMore) {
@@ -71,11 +84,10 @@ const fetchVideos = async (page: number) => {
         showsVerticalScrollIndicator={false}
         decelerationRate="fast"
         onViewableItemsChanged={handleViewableItemsChanged}
-        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 70 }}
+        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 90 }}
         onEndReached={loadMoreVideos}
         onRefresh={loadMoreVideos}
         refreshing={loading}
-        onEndReachedThreshold={0.5}
         ListHeaderComponent={loading ? <ActivityIndicator size="large" color="#F0F0FF" /> : null}
       />
     </View>

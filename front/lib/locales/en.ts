@@ -3,6 +3,7 @@
  */
 
 const English = {
+  more_info: 'More Info',
   exitVelocity:"Exit Velocity",
   launchAngle:"Launch Angle",
   recent:"Recent",
