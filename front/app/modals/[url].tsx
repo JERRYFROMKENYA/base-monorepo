@@ -14,7 +14,7 @@ const Url = () => {
   useEffect(() => {
     getHomeRunByPlayId(url).then((data)=>{
       setHrData(data)
-      getTeamPlayers(data[0].video).then((data)=>{
+      getTeamPlayers(data[0].video,data[0].season).then((data)=>{
         setTeamData(data);
       })
 

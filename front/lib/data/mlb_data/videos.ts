@@ -18,9 +18,9 @@ export async function getHomeRunVideos(page: number, perPage: number, season: nu
 }
 
 
-export async function getTeamPlayers(url:string){
+export async function getTeamPlayers(url:string,year:number){
   try {
-    const response = await fetch(`${VIDEOS_URL_1}/getTeams?videoUrl=${url}`);
+    const response = await fetch(`${VIDEOS_URL_1}/getTeams?videoUrl=${url}&season=${year}`);
     // if (!response.ok) {
     //   throw new Error(`Error fetching players: ${response.statusText}`);
     // }
