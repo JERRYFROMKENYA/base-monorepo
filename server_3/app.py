@@ -10,6 +10,48 @@ import google.generativeai as genai
 from chromadb import Documents, EmbeddingFunction, Embeddings
 from chromadb.config import Settings
 import time
+import requests
+
+
+def load_newline_delimited_json(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = []
+        for line in response.text.strip().split('\n'):
+            try:
+                data.append(json.loads(line))
+            except json.JSONDecodeError as e:
+                print(f"Skipping invalid JSON line: {line} due to error: {e}")
+        return pd.DataFrame(data)
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading data: {e}")
+        return None
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return None
+
+
+def process_endpoint_url(endpoint_url, pop_key=None):
+    json_result = requests.get(endpoint_url).content
+    data = json.loads(json_result)
+
+    if not data:
+        return pd.DataFrame()
+
+    if pop_key:
+        if pop_key in data:
+            df_result = pd.json_normalize(data.pop(pop_key), sep='_')
+        else:
+            print(f"Key '{pop_key}' not found in the data.")
+            return data
+    else:
+        df_result = pd.json_normalize(data)
+
+    return df_result
+
+
+
 
 app = Flask(__name__)
 
@@ -57,7 +99,6 @@ def get_players_seen(video_url):
     Your job is to identify the players seen in the video and return their names.
     Use both the video and audio streams to piece together the required data
     '''
-
     class PlayerSchema(typing.TypedDict):
         playerName: str
         position: str
@@ -229,14 +270,34 @@ def get_teams(video_url):
         response_schema=TeamsSchema
     )
 
+    get_players_seen_system_prompt = '''
+        You are a multimodal system that analyzes videos of baseball at 1 frame per second.
+        Your job is to identify the players seen in the video and return their names.
+        Use both the video and audio streams to piece together the required data
+        '''
+
+    class PlayerSchema(typing.TypedDict):
+        playerName: str
+        position: str
+
+    class PlayerSeenSchema(typing.TypedDict):
+        players: typing.List[PlayerSchema]
+
+    get_players_seen_config = genai.GenerationConfig(
+        response_mime_type="application/json",
+        response_schema=PlayerSeenSchema
+    )
+
     path = "video.mp4"
     if not video_url:
         return []
+
     def download_video():
         try:
             subprocess.run(['wget', video_url, '-O', path], check=True)
         except subprocess.CalledProcessError as e:
             return jsonify({"error": f"Failed to download video: {e}"}), 500
+
     download_thread = threading.Thread(target=download_video)
     download_thread.start()
     download_thread.join()
@@ -253,6 +314,13 @@ def get_teams(video_url):
         return jsonify({"error": "Video processing failed"}), 500
 
     model = genai.GenerativeModel(model_name="models/gemini-2.0-flash-exp",
+                                  system_instruction=get_players_seen_system_prompt,
+                                  generation_config=get_players_seen_config)
+
+    response = model.generate_content(["Analyze the following video:", video_file])
+    players_data = json.loads(response.text)['players']
+
+    model = genai.GenerativeModel(model_name="models/gemini-2.0-flash-exp",
                                   system_instruction=get_teams_system_prompt,
                                   generation_config=get_teams_config)
 
@@ -260,8 +328,31 @@ def get_teams(video_url):
     result_data = json.loads(response.text)
     print(response.text)
     os.remove(path)
+    teams_ = []
 
-    return result_data
+    teams_endpoint_url = f'https://statsapi.mlb.com/api/v1/teams'
+    teams = process_endpoint_url(teams_endpoint_url, 'teams')
+
+    team_rosters = {}
+    for team in result_data["teams"]:
+        team_name = team['teamName']
+        filtered_teams = teams[teams.apply(lambda row: row.astype(str).str.contains(team_name, case=False, na=False).any(), axis=1)].iloc[0]
+        team_id = filtered_teams['id']
+        if team_id not in team_rosters:
+            team_roster_endpoint_url = f'https://statsapi.mlb.com/api/v1/teams/{team_id}/roster'
+            team_rosters[team_id] = process_endpoint_url(team_roster_endpoint_url, 'roster')
+        team_roster = team_rosters[team_id]
+        players_involved = []
+        for player in players_data:
+            if player['playerName'] in team_roster['person_fullName'].values:
+                player_id = team_roster[team_roster['person_fullName'].str.contains(player['playerName'])].iloc[0].to_dict()['person_id']
+                players_involved.append({'id': player_id, 'name': player['playerName']})
+        filtered_teams['players'] = players_involved
+        filtered_teams['logo'] = f'https://www.mlbstatic.com/team-logos/{team_id}.svg'
+        teams_.append(filtered_teams.to_dict())
+        print(teams_)
+
+    return teams_
 
 def get_bat_speed(video_url):
     get_bat_speed_system_prompt = '''

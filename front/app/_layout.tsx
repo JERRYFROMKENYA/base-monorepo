@@ -136,7 +136,13 @@ const RootLayoutNav = () => {
           <Stack.Screen
             name="modal"
             options={{ title: Locales.t('titleModal'), presentation: 'modal' }}
-          /><Stack.Screen
+          />
+          <Stack.Screen
+            name="modals/[url]"
+            options={{ title: Locales.t('more_info'), presentation: 'modal' }}
+          />
+
+          <Stack.Screen
           name="index"
           options={{headerShown:false}}
         />
