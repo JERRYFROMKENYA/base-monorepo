@@ -1,44 +1,66 @@
-import React, { useEffect, useRef } from 'react'
-import { Dimensions, StyleSheet } from 'react-native'
-import {Video, ResizeMode} from "expo-av";
-import { View } from '@/lib/presentation/Themed'
-import { Text, Chip, Icon } from 'react-native-paper'
-import { useRouter } from 'expo-router'
+import React, { useEffect, useState } from 'react';
+import { Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
+import { View } from '@/lib/presentation/Themed';
+import { Text, Chip, Icon } from 'react-native-paper';
+import { useRouter } from 'expo-router';
+import { Locales } from '@/lib';
+import { useEvent } from 'expo';
+import { useVideoPlayer, VideoView } from 'expo-video';
 
-const VideoPlayer = ({ item, index ,isViewable, isLiked,isBookmarked }: any) => {
-  const videoRef = useRef<Video>(null);
- const router = useRouter()
+const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) => {
+  const router = useRouter();
+  const [liked, setLiked] = useState(isLiked);
+
+  const player = useVideoPlayer(item.video, (player) => {
+    player.loop = true;
+    isViewable && player.play();
+  });
+  const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
+
   useEffect(() => {
     if (isViewable) {
-      videoRef.current?.playAsync();
+      player.play();
     } else {
-      videoRef.current?.pauseAsync();
+      player.pause();
     }
-  }, [index,isViewable, router]);
+  }, [index, isViewable, router]);
 
+  const handleDoublePress = () => {
+    setLiked(!liked);
+  };
+  const handlePress=()=>{
+    if(isPlaying){
+      player.pause();
+  }
+  else{
+    player.play();
+  }
+  }
   return (
     <View>
-      <Video
-        ref={videoRef}
-        style={styles.video}
-        source={{ uri: item.video }}
-        resizeMode={ResizeMode.COVER}
-        isLooping
-
-        shouldPlay={isViewable} // Ensures only visible videos play
-      />
-      {item.title&&<View style={styles.videoOverlay}>
-        <Text>{item.title}</Text>
-        <View style={{display:"flex", flexDirection:"row", backgroundColor:"none",paddingTop:10,alignSelf:"flex-end", alignContent:"space-between", flexWrap:"wrap",paddingHorizontal:10}}>
-          <Chip icon={"baseball-bat"} style={{marginRight:3, opacity:0.7}}>{`Exit Velocity: ${item.ExitVelocity} mph`||0}</Chip>
-          <Chip icon={"angle-acute"} style={{marginRight:3, opacity: 0.7}}>{`Launch Angle: ${item.LaunchAngle}°`||0}</Chip>
-          <Chip style={{marginRight:5,marginTop:5, opacity:0.8}}>{`More...`}</Chip>
+      <TouchableOpacity style={{height:Dimensions.get("window").height,width:Dimensions.get("window").width}} onPress={handlePress} onLongPress={handleDoublePress} delayLongPress={300}>
+        <VideoView style={styles.video} player={player} contentFit={'cover'} nativeControls={false} />
+      </TouchableOpacity>
+      {item.title && (
+        <View style={styles.videoOverlay}>
+          <Text variant={"bodyLarge"}>{item.title}</Text>
+          <View style={{ display: 'flex', flexDirection: 'row', backgroundColor: 'none', paddingTop: 10, alignSelf: 'flex-end', alignContent: 'space-between', flexWrap: 'wrap', paddingHorizontal: 10 }}>
+            <Chip icon={'baseball-bat'} style={{ marginRight: 3 }}>{`${Locales.t("exitVelocity")}: ${item.ExitVelocity} mph` || 0}</Chip>
+            <Chip icon={'angle-acute'} style={{ marginRight: 3 }}>{`${Locales.t("launchAngle")} ${item.LaunchAngle}°` || 0}</Chip>
+            <Chip style={{ marginRight: 5, marginTop: 5 }}>{`More...`}</Chip>
           </View>
-      </View>}
-      <View style={{position:"absolute",top:"45%", right:0, backgroundColor:"none",margin:5, justifyContent:"space-around"}}>
-        <Icon source={"heart"} size={50} color={isLiked&&"red"}/>
-        <Icon source={"bookmark"} size={50} color={isBookmarked&&"yellow"}/>
-        <Icon source={"table-eye"} size={50} />
+        </View>
+      )}
+      <View style={{ position: 'absolute', top: '45%', right: 0, backgroundColor: 'none', margin: 5, justifyContent: 'space-around' }}>
+        <TouchableOpacity style={{ marginBottom: 15 }} onPress={() => { }}>
+          <Icon source={'heart'} size={50} color={liked ? '#e86d6d' : undefined} />
+        </TouchableOpacity>
+        <TouchableOpacity style={{ marginBottom: 15 }} onPress={() => { }}>
+          <Icon source={'bookmark'} size={50} color={isBookmarked ? '#e4c92a' : undefined} />
+        </TouchableOpacity>
+        <TouchableOpacity style={{ marginBottom: 15 }} onPress={() => { }}>
+          <Icon source={'baseball'} size={50} />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -50,19 +72,18 @@ const styles = StyleSheet.create({
     height: Dimensions.get('window').height,
   },
   videoOverlay: {
-    position:'absolute',
-    alignSelf: 'flex-end',
-    justifyContent: 'flex-end',
+    flexGrow: 1,
+    position: 'absolute',
+    alignSelf: 'center',
+    justifyContent: 'center',
     width: '100%',
     right: 0,
-    bottom:0,
-    backgroundColor: 'rgba(0,0,0,0.18)',
+    bottom: 0,
+    backgroundColor: 'none',
     paddingBottom: 40,
-    paddingTop:5,
-    paddingLeft:5,
-    borderRadius:15
+    padding: 5,
+    borderRadius: 15,
   },
 });
 
-
-export default VideoPlayer
+export default VideoPlayer;

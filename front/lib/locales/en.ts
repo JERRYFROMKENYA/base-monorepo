@@ -3,6 +3,8 @@
  */
 
 const English = {
+  exitVelocity:"Exit Velocity",
+  launchAngle:"Launch Angle",
   recent:"Recent",
   suggested:"Suggested",
   all:"All",

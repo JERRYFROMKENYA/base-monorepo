@@ -4,18 +4,18 @@ import os
 import time
 import typing
 from dotenv import load_dotenv
-from flask import jsonify, request
-from app import app
+from flask import Flask, jsonify, request
 import google.generativeai as genai
-
 import threading
+# from app.util.ai_interface import Gemini
 
-from app.util.ai_interface import Gemini
+# Initialize Flask app
+app = Flask(__name__)
 
 # Load environment variables from .env file
 load_dotenv()
 # Load API key from environment variable
-api_key = os.environ.get("GENAI_API_KEY")
+api_key = os.environ.get("GOOGLE_API_KEY")
 if not api_key:
     raise ValueError("API key not found. Please set the GENAI_API_KEY environment variable.")
 #prompt for summaries
@@ -189,3 +189,9 @@ def analyze_video():
     os.remove(path)
 
     return jsonify(result_data)
+
+
+
+
+
+

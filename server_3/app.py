@@ -1,3 +1,7 @@
+import json
+import subprocess
+import threading
+import typing
 from flask import Flask, request, jsonify
 import os
 import pandas as pd
@@ -22,6 +26,296 @@ client_settings = Settings(
 chroma_client = chromadb.Client(client_settings)
 
 
+def get_translation(text, lang):
+    translation_system_prompt = f'''
+    You are a language translation system that translates text from one language to another.
+    Your job is to translate the text provided to {lang}. You refine the translation, not for the sake of accuracy, 
+    but for the sake of fluency.
+    '''
+    class TranslationSchema(typing.TypedDict):
+        translation: str
+        lang: str
+
+    translation_config = genai.GenerationConfig(
+        response_mime_type="application/json",
+        response_schema=TranslationSchema
+    )
+
+    model = genai.GenerativeModel(model_name="models/gemini-2.0-flash-exp",
+                                    system_instruction=translation_system_prompt,
+                                    generation_config=translation_config)
+
+    response = model.generate_content([text, lang])
+
+    result_data = json.loads(response.text)
+
+    return result_data
+
+def get_players_seen(video_url):
+    get_players_seen_system_prompt = '''
+    You are a multimodal system that analyzes videos of baseball at 1 frame per second.
+    Your job is to identify the players seen in the video and return their names.
+    Use both the video and audio streams to piece together the required data
+    '''
+
+    class PlayerSchema(typing.TypedDict):
+        playerName: str
+        position: str
+
+    class PlayerSeenSchema(typing.TypedDict):
+        players: typing.List[PlayerSchema]
+
+    get_players_seen_config = genai.GenerationConfig(
+        response_mime_type="application/json",
+        response_schema=PlayerSeenSchema
+    )
+    path = "video.mp4"
+    if not video_url:
+        return []
+    def download_video():
+        try:
+            subprocess.run(['wget', video_url, '-O', path], check=True)
+        except subprocess.CalledProcessError as e:
+            return jsonify({"error": f"Failed to download video: {e}"}), 500
+    download_thread = threading.Thread(target=download_video)
+    download_thread.start()
+    download_thread.join()
+
+    video_file = genai.upload_file(path=path)
+
+    # Wait until the uploaded video is available
+    while video_file.state.name == "PROCESSING":
+        print('.', end='')
+        time.sleep(2)
+        video_file = genai.get_file(video_file.name)
+
+    if video_file.state.name == "FAILED":
+        return jsonify({"error": "Video processing failed"}), 500
+
+    model = genai.GenerativeModel(model_name="models/gemini-2.0-flash-exp",
+                                  system_instruction=get_players_seen_system_prompt,
+                                  generation_config=get_players_seen_config)
+
+    response = model.generate_content(["Analyze the following video:", video_file])
+    result_data = json.loads(response.text)
+    print(response.text)
+    os.remove(path)
+
+    return result_data
+
+def get_video_summary(video_url):
+    get_video_summary_system_prompt = '''
+    You are a multimodal system that analyzes videos of baseball at 1 frame per second.
+    Your job is to provide a summary of the video.
+    Use both the video and audio streams to piece together the required data
+    '''
+
+    class VideoSummarySchema(typing.TypedDict):
+        summary: str
+
+    get_video_summary_config = genai.GenerationConfig(
+        response_mime_type="application/json",
+        response_schema=VideoSummarySchema
+    )
+
+    path = "video.mp4"
+
+    if not video_url:
+        return []
+
+    def download_video():
+        try:
+            subprocess.run(['wget', video_url, '-O', path], check=True)
+        except subprocess.CalledProcessError as e:
+            return jsonify({"error": f"Failed to download video: {e}"}), 500
+
+    download_thread = threading.Thread(target=download_video)
+    download_thread.start()
+    download_thread.join()
+
+    video_file = genai.upload_file(path=path)
+
+    # Wait until the uploaded video is available
+    while video_file.state.name == "PROCESSING":
+        print('.', end='')
+        time.sleep(2)
+        video_file = genai.get_file(video_file.name)
+
+    if video_file.state.name == "FAILED":
+        return jsonify({"error": "Video processing failed"}), 500
+
+
+    model = genai.GenerativeModel(model_name="models/gemini-2.0-flash-exp",
+                                  system_instruction=get_video_summary_system_prompt,
+                                  generation_config=get_video_summary_config)
+
+    response = model.generate_content(["give me highlights of the above game", video_file])
+
+    result_data = json.loads(response.text)
+    print(response.text)
+    os.remove(path)
+
+    return result_data
+
+def get_play_explanation(video_url):
+    get_play_explanation_system_prompt = '''
+        You are a system that analyzes videos of baseball at 1 frame per second. 
+        You understand the game of baseball and can provide a summary of the play.
+        You explain to the user why the play was made and why it was the best or worst play for either side.
+        Use both the video and audio streams to piece together the required data
+        '''
+
+
+
+    class PlayExplanationSchema(typing.TypedDict):
+        explanation: str
+
+    get_play_explanation_config = genai.GenerationConfig(
+        response_mime_type="application/json",
+        response_schema=PlayExplanationSchema
+    )
+    path = "video.mp4"
+    if not video_url:
+        return []
+
+    def download_video():
+        try:
+            subprocess.run(['wget', video_url, '-O', path], check=True)
+        except subprocess.CalledProcessError as e:
+            return jsonify({"error": f"Failed to download video: {e}"}), 500
+
+    download_thread = threading.Thread(target=download_video)
+    download_thread.start()
+    download_thread.join()
+
+    video_file = genai.upload_file(path=path)
+
+    # Wait until the uploaded video is available
+    while video_file.state.name == "PROCESSING":
+        print('.', end='')
+        time.sleep(2)
+        video_file = genai.get_file(video_file.name)
+
+    if video_file.state.name == "FAILED":
+        return jsonify({"error": "Video processing failed"}), 500
+
+    model = genai.GenerativeModel(model_name="models/gemini-2.0-flash-exp",
+                                  system_instruction=get_play_explanation_system_prompt,
+                                  generation_config=get_play_explanation_config)
+
+    response = model.generate_content(["Analyze the following video:", video_file])
+    result_data = json.loads(response.text)
+    print(response.text)
+    os.remove(path)
+
+    return result_data
+
+def get_teams(video_url):
+    get_teams_system_prompt = '''
+    You are a multimodal system that analyzes videos of baseball at 1 frame per second.
+    Your job is to identify the teams playing in the video.
+    Use both the video and audio streams to piece together the required data
+    '''
+
+    class TeamSchema(typing.TypedDict):
+        teamName: str
+        abbreviation: str
+
+    class TeamsSchema(typing.TypedDict):
+        teams: typing.List[TeamSchema]
+
+    get_teams_config = genai.GenerationConfig(
+        response_mime_type="application/json",
+        response_schema=TeamsSchema
+    )
+
+    path = "video.mp4"
+    if not video_url:
+        return []
+    def download_video():
+        try:
+            subprocess.run(['wget', video_url, '-O', path], check=True)
+        except subprocess.CalledProcessError as e:
+            return jsonify({"error": f"Failed to download video: {e}"}), 500
+    download_thread = threading.Thread(target=download_video)
+    download_thread.start()
+    download_thread.join()
+
+    video_file = genai.upload_file(path=path)
+
+    # Wait until the uploaded video is available
+    while video_file.state.name == "PROCESSING":
+        print('.', end='')
+        time.sleep(2)
+        video_file = genai.get_file(video_file.name)
+
+    if video_file.state.name == "FAILED":
+        return jsonify({"error": "Video processing failed"}), 500
+
+    model = genai.GenerativeModel(model_name="models/gemini-2.0-flash-exp",
+                                  system_instruction=get_teams_system_prompt,
+                                  generation_config=get_teams_config)
+
+    response = model.generate_content(["Analyze the following video:", video_file])
+    result_data = json.loads(response.text)
+    print(response.text)
+    os.remove(path)
+
+    return result_data
+
+def get_bat_speed(video_url):
+    get_bat_speed_system_prompt = '''
+    You are a multimodal system that analyzes videos of baseball at 1 frame per second.
+    Your job is to identify the bat speed of the player. Emphasis on the speed of the bat. Not the Exit Velocity!
+    Add the type of ball thrown in the video to the response.
+     Look at the number in the strike zone after the box, right after the batter strikes the ball and return it...
+     Use both the video and audio streams to piece together the required data
+    '''
+
+    class BatSpeedSchema(typing.TypedDict):
+        batSpeed: int
+        ballType: str
+
+    get_bat_speed_config = genai.GenerationConfig(
+        response_mime_type="application/json",
+        response_schema=BatSpeedSchema
+    )
+
+    path = "video.mp4"
+    if not video_url:
+        return []
+    def download_video():
+        try:
+            subprocess.run(['wget', video_url, '-O', path], check=True)
+        except subprocess.CalledProcessError as e:
+            return jsonify({"error": f"Failed to download video: {e}"}), 500
+    download_thread = threading.Thread(target=download_video)
+    download_thread.start()
+    download_thread.join()
+
+    video_file = genai.upload_file(path=path)
+
+    # Wait until the uploaded video is available
+    while video_file.state.name == "PROCESSING":
+        print('.', end='')
+        time.sleep(2)
+        video_file = genai.get_file(video_file.name)
+
+    if video_file.state.name == "FAILED":
+        return jsonify({"error": "Video processing failed"}), 500
+
+    model = genai.GenerativeModel(model_name="models/gemini-2.0-flash-exp",
+                                  system_instruction=get_bat_speed_system_prompt,
+                                  generation_config=get_bat_speed_config)
+
+    response = model.generate_content(["Analyze the following video:", video_file])
+    result_data = json.loads(response.text)
+    print(response.text)
+    os.remove(path)
+
+    return result_data
+
+
 # Load and clean data
 mlb_hr_csvs_list = [
     'https://storage.googleapis.com/gcp-mlb-hackathon-2025/datasets/2016-mlb-homeruns.csv',
@@ -29,10 +323,6 @@ mlb_hr_csvs_list = [
     'https://storage.googleapis.com/gcp-mlb-hackathon-2025/datasets/2024-mlb-homeruns.csv',
     'https://storage.googleapis.com/gcp-mlb-hackathon-2025/datasets/2024-postseason-mlb-homeruns.csv'
 ]
-
-
-
-
 mlb_hrs = pd.DataFrame({'csv_file': mlb_hr_csvs_list})
 mlb_hrs['season'] = mlb_hrs['csv_file'].str.extract(r'/datasets/(\d{4})')
 mlb_hrs['hr_data'] = mlb_hrs['csv_file'].apply(pd.read_csv)
@@ -214,6 +504,38 @@ def query():
             })
 
     return jsonify(_data)
+
+@app.route('/getPlayers', methods=["GET"])
+def get_players():
+    video_url=request.args.get('videoUrl', '').strip("'").strip('"')
+    return jsonify(get_players_seen(video_url))
+
+
+@app.route('/getTeams', methods=["GET"])
+def get_teams_():
+    video_url=request.args.get('videoUrl', '').strip("'").strip('"')
+    return jsonify(get_teams(video_url))
+
+@app.route('/getPlayExplanation', methods=["GET"])
+def get_play():
+    video_url=request.args.get('videoUrl', '').strip("'").strip('"')
+    return jsonify(get_play_explanation(video_url))
+
+@app.route('/translate', methods=["GET"])
+def translate():
+    text = request.args.get('text', '').strip("'").strip('"')
+    lang = request.args.get('lang', '').strip("'").strip('"')
+    return jsonify(get_translation(text, lang))
+
+@app.route('/getBatSpeed', methods=["GET"])
+def get_bat_speed_():
+    video_url=request.args.get('videoUrl', '').strip("'").strip('"')
+    return jsonify(get_bat_speed(video_url))
+
+@app.route('/summary', methods=["GET"])
+def summary():
+    video_url=request.args.get('videoUrl', '').strip("'").strip('"')
+    return jsonify(get_video_summary(video_url))
 
 @app.route('/generate_hr_data', methods=['GET'])
 def generate_hr_data():
