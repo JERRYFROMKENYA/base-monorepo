@@ -4,14 +4,18 @@ import { Platform } from 'react-native'
 import { Surface } from 'react-native-paper'
 import {useLocalSearchParams} from 'expo-router'
 import { Locales, ScreenInfo, styles } from '@/lib'
-import { getHomeRunByPlayId } from '@/lib/data/mlb_data/videos'
+import { getHomeRunByPlayId, getTeamPlayers } from '@/lib/data/mlb_data/videos'
 
 const Url = () => {
   const {url} = useLocalSearchParams()
 
   useEffect(() => {
     getHomeRunByPlayId(url).then((data)=>{
-      console.log(data)
+      console.log(data[0])
+      // getTeamPlayers(data[0].video).then((data)=>{
+      //   console.log(data)
+      // })
+
     })
   }, [])
 

@@ -585,7 +585,7 @@ def home_run():
         paginated_documents = filtered_documents[start:end]
 
         for doc in paginated_documents:
-            _data.append({
+            _data.append(dict({
                 'title': doc['title'],
                 'ExitVelocity': doc['ExitVelocity'],
                 'LaunchAngle': doc['LaunchAngle'],
@@ -593,7 +593,7 @@ def home_run():
                 'video': doc['video'],
                 'season': doc['season'],
                 'play_id': doc['play_id']
-            })
+            }))
 
     return jsonify(_data)
 

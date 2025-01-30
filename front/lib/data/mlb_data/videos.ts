@@ -17,10 +17,10 @@ export async function getHomeRunVideos(page: number, perPage: number, season: nu
 export async function getTeamPlayers(url:string){
   try {
     const response = await fetch(`${VIDEOS_URL_1}/getTeams?videoUrl=${url}`);
-    if (!response.ok) {
-      throw new Error(`Error fetching players: ${response.statusText}`);
-    }
-    return await response.json();
+    // if (!response.ok) {
+    //   throw new Error(`Error fetching players: ${response.statusText}`);
+    // }
+    return await response.text();
   } catch (e) {
     console.error('Error getting team players:', e);
     return []; // Return an empty array in case of an error
@@ -30,7 +30,7 @@ export async function getTeamPlayers(url:string){
 export async function getHomeRunByPlayId(playId:string){
   try {
     console.log(playId)
-    const response = await fetch(`${VIDEOS_URL_1}/home_runs?playId=${playId}`);
+    const response = await fetch(`${VIDEOS_URL_1}/home_run?playId=${playId}`);
     return await response.text();
   } catch (e) {
     console.error('Error getting home run:', e);
