@@ -336,6 +336,8 @@ def get_teams(video_url,season):
     team_rosters = {}
     for team in result_data["teams"]:
         team_name = team['teamName']
+        if not team_name:
+            continue
         filtered_teams = teams[teams.apply(lambda row: row.astype(str).str.contains(team_name, case=False, na=False).any(), axis=1)].iloc[0]
         team_id = filtered_teams['id']
         if team_id not in team_rosters:

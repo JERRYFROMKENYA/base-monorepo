@@ -10,12 +10,19 @@ const Url = () => {
   const {url} = useLocalSearchParams()
   const [teamData, setTeamData] = useState<any>(null);
   const [hrData, setHrData] = useState<any>(null);
+  const [players, setPlayer] = useState<any>([]);
 
   useEffect(() => {
     getHomeRunByPlayId(url).then((data)=>{
       setHrData(data)
       getTeamPlayers(data[0].video,data[0].season).then((data)=>{
         setTeamData(data);
+        let i=0
+        for (const datum of data) {
+          setPlayer([...players, ...datum.players])
+          i++;
+        }
+
       })
 
     })
@@ -28,7 +35,9 @@ const Url = () => {
       {/* Use a light status bar on iOS to account for the black space above the modal */}
       <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
       {teamData&&<><Text>Players</Text>
-        <Text>{teamData[0]?.players[0]?.name||"none"}</Text>
+        {players.map((player: any) => (
+          <Text>{player?.name}</Text>
+        ))}
 </>}
 
 
