@@ -411,20 +411,8 @@ def get_bat_speed(video_url):
             "expected_output": {"batSpeed": 82, "ballType": "slider"}
         },
         {
-            "url": "https://sporty-clips.mlb.com/RFhQTU1fWGw0TUFRPT1fVlFaUlVGME1Bd0FBV2xBR1VnQUFVbGRYQUZnQVd3SUFCMTBHQkFSUVZBSUhCbGRm.mp4",
-            "expected_output": {"batSpeed": 94, "ballType": "sinker"}
-        },
-        {
-            "url": "https://sporty-clips.mlb.com/bk1SamtfWGw0TUFRPT1fQmdrQVZsUUZBbGNBQ0FZS1ZBQUFDVkJRQUZnR0JRTUFCRk5SVXdjQ0NRcGRVMUVD.mp4",
-            "expected_output": {"batSpeed": 84, "ballType": "Fair ball"}
-        },
-        {
             "url": "https://sporty-clips.mlb.com/WGczZ05fWGw0TUFRPT1fQVFkWlhGUUZBRk1BRGxWVFZ3QUFCMVZSQUFOV1dnSUFVRjBDVXdWVEJRVlhWUW9F.mp4",
             "expected_output": {"batSpeed": 79, "ballType": "Curveball"}
-        },
-        {
-            "url": "https://sporty-clips.mlb.com/QWFNUk9fWGw0TUFRPT1fVWdWVEFWY05CQXNBRGxNSEFBQUFDRlFDQUFOVEJ3QUFCRlpSQkZFSEJWRlRBQW9F.mp4",
-            "expected_output": {"batSpeed": 97, "ballType": "unknown"}
         }
     ]
 
