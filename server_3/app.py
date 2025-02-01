@@ -399,40 +399,17 @@ def get_bat_speed(video_url):
         except subprocess.CalledProcessError as e:
             return jsonify({"error": f"Failed to download video: {e}"}), 500
 
-    # Create a directory for example videos
-    example_dir = "example_videos"
-    if not os.path.exists("example_videos"):
-        os.makedirs(example_dir, exist_ok=True)
-
-    # List of example URLs and their expected outputs
-    example_data = [
-        {
-            "url": "https://sporty-clips.mlb.com/UldZYWVfWGw0TUFRPT1fRHdJRlZsQlhYd0lBQzFFRVVnQUFVZ2RRQUZsVFVGRUFDMWRUVmxaUkJ3VlZVZ05m.mp4",
-            "expected_output": {"batSpeed": 82, "ballType": "slider"}
-        }
-    ]
-
     # Download the main video
     download_thread = threading.Thread(target=download_video, args=(video_url, path))
     download_thread.start()
     download_thread.join()
-
-    # Download example videos
-    example_files = []
-    for i, example in enumerate(example_data):
-        example_path = os.path.join(example_dir, f"example_{i}.mp4")
-        if not os.path.exists(example_path):
-            download_thread = threading.Thread(target=download_video, args=(example["url"], example_path))
-            download_thread.start()
-            download_thread.join()
-        example_files.append((genai.upload_file(path=example_path), example["expected_output"]))
 
     video_file = genai.upload_file(path=path)
 
     # Wait until the uploaded video is available
     while video_file.state.name == "PROCESSING":
         print('.', end='')
-        time.sleep(10)
+        time.sleep(2)
         video_file = genai.get_file(video_file.name)
 
     if video_file.state.name == "FAILED":
@@ -443,12 +420,7 @@ def get_bat_speed(video_url):
                                   generation_config=get_bat_speed_config)
 
     # Prepare the input for the model
-    inputs = ["input: "]
-    for example_file, expected_output in example_files:
-        inputs.append(example_file)
-        inputs.append(f"output: {json.dumps(expected_output)}")
-    inputs.append("input")
-    inputs.append(video_file)
+    inputs = ["input: ", video_file]
 
     response = model.generate_content(inputs)
     result_data = json.loads(response.text)
