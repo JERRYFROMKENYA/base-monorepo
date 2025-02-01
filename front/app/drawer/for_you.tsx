@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ActivityIndicator, Surface } from 'react-native-paper';
 import { Dimensions, FlatList, StyleSheet, View } from 'react-native';
 import { getHomeRunVideos } from '@/lib/data/mlb_data/videos';
@@ -9,92 +9,84 @@ import { usePocketBase } from '@/lib/data/pocketbase';
 
 const ForYou = () => {
   const [videos, setVideos] = useState<any[]>([]);
-  const [activeIndex, setActiveIndex] = useState<number | null>(0);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [hasMore] = useState(true);
   const { user } = useAuth();
   const { pb } = usePocketBase();
 
   const ITEMS_PER_PAGE = 10;
 
-const fetchVideos = async (page: number) => {
-  try {
-    setLoading(true);
+  const fetchVideos = async (page: number) => {
+    if (loading) return; // Prevent duplicate fetches
+    try {
+      setLoading(true);
 
-    // Fetch videos and watched list in parallel
-    const [data, watchedList] = await Promise.all([
-      getHomeRunVideos(page, ITEMS_PER_PAGE),
-      getWatchedVideos(user, pb)
-    ]);
+      // Fetch videos and watched list in parallel
+      const [data, watchedList] = await Promise.all([
+        getHomeRunVideos(page, ITEMS_PER_PAGE),
+        getWatchedVideos(user, pb),
+      ]);
 
-    const watchedPlayIds = watchedList.map((video: any) => video.play_id);
+      const watchedPlayIds = new Set(watchedList.map((video: any) => video.play_id));
 
-    const startIndex = (page - 1) * ITEMS_PER_PAGE;
-    const filteredData = data
-      .filter((video: any) => !watchedPlayIds.includes(video.play_id))
-      .map((video: any, index: number) => ({ ...video, id: startIndex + index }));
+      const filteredData = data
+        .filter((video: any) => !watchedPlayIds.has(video.play_id))
+        .map((video: any, index: number) => ({ ...video, id: (page - 1) * ITEMS_PER_PAGE + index }));
 
-    // Use functional state update to avoid unnecessary re-renders
-    setVideos((prev) => [...prev, ...filteredData]);
-    setLoading(false);
-  } catch (error) {
-    console.error('Error fetching videos:', error);
-    setLoading(false);
-  }
-};
-
-useEffect(() => {
-  fetchVideos(currentPage);
-
-  return () => {
-    // Cleanup function to release memory
-    setVideos([]);
-    setActiveIndex(null);
+      setVideos((prev) => [...prev, ...filteredData]);
+    } catch (error) {
+      console.error('Error fetching videos:', error);
+    } finally {
+      setLoading(false);
+    }
   };
-}, [currentPage]);
+
+  useEffect(() => {
+    fetchVideos(currentPage);
+  }, [currentPage]);
 
   const loadMoreVideos = () => {
-    if (!loading && hasMore) {
-      setCurrentPage((prev) => prev + 1);
-    }
+    if (!loading) setCurrentPage((prev) => prev + 1);
   };
 
-  const handleViewableItemsChanged = React.useCallback(({ viewableItems }: any) => {
+  const handleViewableItemsChanged = useCallback(({ viewableItems }: any) => {
     if (viewableItems.length > 0) {
-      console.log(viewableItems[0]);
-      setActiveIndex(viewableItems[0].item.play_id);
-      viewHomeRun(user, pb, viewableItems[0].item.play_id).then((res) => {
-        console.log(res);
-      });
+      const playId = viewableItems[0].item.play_id;
+      if (playId !== activeIndex) {
+        setActiveIndex(playId);
+        viewHomeRun(user, pb, playId).then(console.log);
+      }
     }
-  }, []);
-
-
-  const handleRefresh = () => {
-    loadMoreVideos()
-  }
+  }, [activeIndex, user, pb]);
 
   return (
-    <View style={{ height: '100%' }}>
+    <View style={{ flex: 1 }}>
       <FlatList
         data={videos}
-        keyExtractor={(item, index) => `${item.id}-${index}`}
+        keyExtractor={(item) => `${item.id}-${item.play_id}`}
         renderItem={({ item }) => (
           <VideoPlayer item={item} index={item.id} isViewable={activeIndex === item.play_id} isLiked isBookmarked />
         )}
         snapToAlignment="end"
         snapToInterval={Dimensions.get('window').height}
-        snapToEnd={true}
-        showsVerticalScrollIndicator={false}
         decelerationRate="fast"
+        showsVerticalScrollIndicator={false}
         onViewableItemsChanged={handleViewableItemsChanged}
         viewabilityConfig={{ viewAreaCoveragePercentThreshold: 90 }}
         onEndReached={loadMoreVideos}
-        onRefresh={loadMoreVideos}
+        onEndReachedThreshold={0.5}
         refreshing={loading}
-
         ListHeaderComponent={loading ? <ActivityIndicator size="large" color="#F0F0FF" /> : null}
+        removeClippedSubviews
+        initialNumToRender={5} // Render only the first few items for performance
+        maxToRenderPerBatch={5} // Optimize memory usage
+        windowSize={11} // Reduce the number of items kept in memory
+        getItemLayout={(data, index) => ({
+          length: Dimensions.get('window').height,
+          offset: Dimensions.get('window').height * index,
+          index,
+        })}
       />
     </View>
   );

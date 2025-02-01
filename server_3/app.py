@@ -448,7 +448,7 @@ def get_bat_speed(video_url):
     # Wait until the uploaded video is available
     while video_file.state.name == "PROCESSING":
         print('.', end='')
-        time.sleep(2)
+        time.sleep(10)
         video_file = genai.get_file(video_file.name)
 
     if video_file.state.name == "FAILED":
