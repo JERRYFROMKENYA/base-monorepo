@@ -1,134 +1,64 @@
 import { VIDEOS_URL_1 } from '@/lib/constants';
-import { Locales } from '@/lib'
-import * as Localization from 'expo-localization'
-// const languageCode= Localization.getLocales()[0].languageCode ?? 'en'
 
+const MAX_RETRIES = 10;
+const RETRY_DELAY = 0; // Start with 1 second delay
 
-export async function getHomeRunVideos(page: number, perPage: number, season: number = 2024) {
-  try {
-    const response = await fetch(`${VIDEOS_URL_1}/home_runs?season=${season}&page=${page}&pageSize=${perPage}`);
-    if (!response.ok) {
-      throw new Error(`Error fetching videos: ${response.statusText}`);
+async function fetchWithRetry(url, retries = MAX_RETRIES, delay = RETRY_DELAY) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Error fetching data: ${response.statusText}`);
+      }
+      const text = await response.text();
+      const sanitizedText = text.replace(/NaN/g, 'null');
+      return JSON.parse(sanitizedText);
+    } catch (error) {
+      console.log(`Attempt ${attempt} failed: ${error.message} on ${url}`);
+      if (attempt === retries) return [];
+      await new Promise(resolve => setTimeout(resolve, delay * attempt));
     }
-    const text = await response.text();
-    console.log('Raw response:', text);
-    const sanitizedText = text.replace(/NaN/g, 'null');
-    const data = JSON.parse(sanitizedText);
-    return data;
-  } catch (e) {
-    console.error('Error getting home run videos:', e);
-    return []; // Return an empty array in case of an error
   }
 }
 
-
-export async function getTeamPlayers(url:string,year:number){
-  try {
-    const response = await fetch(`${VIDEOS_URL_1}/getTeams?videoUrl=${url}&season=${year}`);
-    // if (!response.ok) {
-    //   throw new Error(`Error fetching players: ${response.statusText}`);
-    // }
-    const text = await response.text();
-    // console.log('Raw response:', text);
-    const sanitizedText = text.replace(/NaN/g, 'null');
-    const data = JSON.parse(sanitizedText);
-    return data;
-  } catch (e) {
-    console.error('Error getting team players:', e);
-    return []; // Return an empty array in case of an error
-  }
+export async function getHomeRunVideos(page, perPage, season = 2024) {
+  const url = `${VIDEOS_URL_1}/home_runs?season=${season}&page=${page}&pageSize=${perPage}`;
+  return await fetchWithRetry(url);
 }
 
-export async function getHomeRunByPlayId(playId:string){
-  try {
-    console.log(playId)
-    const response = await fetch(`${VIDEOS_URL_1}/home_run?playId=${playId}`);
-    const text = await response.text();
-    console.log('Raw response:', text);
-    const sanitizedText = text.replace(/NaN/g, 'null');
-    const data = JSON.parse(sanitizedText);
-    return data;
-  } catch (e) {
-    console.error('Error getting home run:', e);
-    return []; // Return an empty array in case of an error
-  }
-
-
+export async function getTeamPlayers(url, year) {
+  const requestUrl = `${VIDEOS_URL_1}/getTeams?videoUrl=${url}&season=${year}`;
+  return await fetchWithRetry(requestUrl);
 }
 
-
-export async function getPlayers(url){
-  try {
-    const response = await fetch(`${VIDEOS_URL_1}/getPlayers?videoUrl=${url}`);
-    const text = await response.text();
-    console.log('Raw response:', text);
-    const sanitizedText = text.replace(/NaN/g, 'null');
-    const data = JSON.parse(sanitizedText);
-    return data;
-  } catch (e) {
-    console.error('Error getting players:', e);
-    return []; // Return an empty array in case of an error
-  }
+export async function getHomeRunByPlayId(playId) {
+  console.log(playId);
+  const url = `${VIDEOS_URL_1}/home_run?playId=${playId}`;
+  return await fetchWithRetry(url);
 }
 
-
-export async function getSummary(url){
-  try {
-    const response = await fetch(`${VIDEOS_URL_1}/summary?videoUrl=${url}`);
-    const text = await response.text();
-    console.log('Raw response:', text);
-    const sanitizedText = text.replace(/NaN/g, 'null');
-    const data = JSON.parse(sanitizedText);
-    return data;
-  } catch (e) {
-    console.error('Error getting summary:', e);
-    return []; // Return an empty array in case of an error
-  }
+export async function getPlayers(url) {
+  const requestUrl = `${VIDEOS_URL_1}/getPlayers?videoUrl=${url}`;
+  return await fetchWithRetry(requestUrl);
 }
 
-
-export async  function getPlayExplanation(url){
-  try {
-    const response = await fetch(`${VIDEOS_URL_1}/getPlayExplanation?videoUrl=${url}`);
-    const text = await response.text();
-    console.log('Raw response:', text);
-    const sanitizedText = text.replace(/NaN/g, 'null');
-    const data = JSON.parse(sanitizedText);
-    return data;
-  } catch (e) {
-    console.error('Error getting play explanation:', e);
-    return []; // Return an empty array in case of an error
-  }
+export async function getSummary(url) {
+  const requestUrl = `${VIDEOS_URL_1}/summary?videoUrl=${url}`;
+  return await fetchWithRetry(requestUrl);
 }
 
-
-
-export async function getTranslation (t: string, lang: string){
-  try {
-    const response = await fetch(`${VIDEOS_URL_1}/translate?text=${t}&lang=${lang}`);
-    console.log(`${VIDEOS_URL_1}/translate?text=${t}&lang=${lang}`)
-    const text = await response.text();
-    console.log('Raw response:', text);
-    const sanitizedText = text.replace(/NaN/g, 'null');
-    const data = JSON.parse(sanitizedText);
-    return data;
-  } catch (e) {
-    console.error('Error getting translation:', e);
-    return []; // Return an empty array in case of an error
-  }
+export async function getPlayExplanation(url) {
+  const requestUrl = `${VIDEOS_URL_1}/getPlayExplanation?videoUrl=${url}`;
+  return await fetchWithRetry(requestUrl);
 }
 
+export async function getTranslation(t, lang) {
+  const requestUrl = `${VIDEOS_URL_1}/translate?text=${t}&lang=${lang}`;
+  console.log(requestUrl);
+  return await fetchWithRetry(requestUrl);
+}
 
-export async function getBatSpeed(url){
-  try {
-    const response = await fetch(`${VIDEOS_URL_1}/getBatSpeed?videoUrl=${url}`);
-    const text = await response.text();
-    console.log('Raw response:', text);
-    const sanitizedText = text.replace(/NaN/g, 'null');
-    const data = JSON.parse(sanitizedText);
-    return data;
-  } catch (e) {
-    console.error('Error getting bat speed:', e);
-    return []; // Return an empty array in case of an error
-  }
+export async function getBatSpeed(url) {
+  const requestUrl = `${VIDEOS_URL_1}/getBatSpeed?videoUrl=${url}`;
+  return await fetchWithRetry(requestUrl);
 }

@@ -26,5 +26,5 @@ COPY . .
 EXPOSE 9000
 
 # Run the application
-CMD ["python", "app.py"]
+CMD ["gunicorn -w 4 -b 0.0.0.0:9000 app:app"]
 
