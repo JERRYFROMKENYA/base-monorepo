@@ -373,7 +373,7 @@ def get_bat_speed(video_url):
     You are a multimodal system that analyzes videos of baseball at 1 frame per second.
     Your job is to identify the bat speed of the player shown on the strike zone.
     Not the Exit Velocity.
-    Add the type of ball thrown in the video to the response.
+    Add the type of ball thrown in the video to the response. (Fastball, Curveball, Slider, Changeup, Sinker, Cutter, Knuckleball, Splitter, Two-Seam Fastball, Four-Seam Fastball, Palm Ball, Screwball, or Eephus.)
     First crop in to the middle of the video and look at the number in the strike zone after the box, right after the batter strikes the ball and return it...
     Use both the video and audio streams to piece together the required data
     The bat speed is usually located along side a dot, right after the hit...
