@@ -367,7 +367,6 @@ def get_teams(video_url,season):
 
     return teams_
 
-
 def get_bat_speed(video_url):
     get_bat_speed_system_prompt = '''
     You are a multimodal system that analyzes videos of baseball at 1 frame per second. Get the frame where the pitcher hits the ball and a few frames before and after.
@@ -428,6 +427,89 @@ def get_bat_speed(video_url):
     os.remove(path)
 
     return result_data
+
+
+def get_video_details(video_url):
+    if not video_url:
+        return []
+
+    path = "video.mp4"
+
+    def download_video():
+        try:
+            subprocess.run(['wget', video_url, '-O', path], check=True)
+        except subprocess.CalledProcessError as e:
+            return jsonify({"error": f"Failed to download video: {e}"}), 500
+
+    download_thread = threading.Thread(target=download_video)
+    download_thread.start()
+    download_thread.join()
+
+    video_file = genai.upload_file(path=path)
+
+    while video_file.state.name == "PROCESSING":
+        print('.', end='')
+        time.sleep(2)
+        video_file = genai.get_file(video_file.name)
+
+    if video_file.state.name == "FAILED":
+        return jsonify({"error": "Video processing failed"}), 500
+
+    def generate_content(system_prompt, schema, inputs):
+        config = genai.GenerationConfig(
+            response_mime_type="application/json",
+            response_schema=schema
+        )
+        model = genai.GenerativeModel(
+            model_name="models/gemini-2.0-flash-exp",
+            system_instruction=system_prompt,
+            generation_config=config
+        )
+        response = model.generate_content(inputs)
+        return json.loads(response.text)
+
+    summary_result = generate_content(
+        '''
+        You are a multimodal system that analyzes videos of baseball at 1 frame per second.
+        Your job is to provide a summary of the video.
+        Use both the video and audio streams to piece together the required data
+        ''',
+        typing.TypedDict('VideoSummarySchema', {'summary': str}),
+        ["give me highlights of the above game", video_file]
+    )
+
+    explanation_result_data = generate_content(
+        '''
+        You are a system that analyzes videos of baseball at 1 frame per second. 
+        You understand the game of baseball and can provide a summary of the play.
+        You explain to the user why the play was made and why it was the best or worst play for either side.
+        Use both the video and audio streams to piece together the required data
+        ''',
+        typing.TypedDict('PlayExplanationSchema', {'explanation': str}),
+        ["Analyze the following video:", video_file]
+    )
+
+    bat_speed_result_data = generate_content(
+        '''
+        You are a multimodal system that analyzes videos of baseball at 1 frame per second. Get the frame where the pitcher hits the ball and a few frames before and after.
+        Your job is to identify the bat speed of the player shown on the strike zone.
+        Not the Exit Velocity.
+        Add the type of ball thrown in the video to the response. (Fastball, Curveball, Slider, Changeup, Sinker, Cutter, Knuckleball, Splitter, Two-Seam Fastball, Four-Seam Fastball, Palm Ball, Screwball, or Eephus.)
+        First crop in to the middle of the video and look at the number in the strike zone after the box, right after the batter strikes the ball and return it...
+        Use both the video and audio streams to piece together the required data
+        The bat speed is usually located along side a dot, right after the hit...
+        ''',
+        typing.TypedDict('BatSpeedSchema', {'batSpeed': int, 'ballType': str}),
+        ["input: ", video_file]
+    )
+
+    os.remove(path)
+
+    return {
+        "summary": summary_result,
+        "explanation": explanation_result_data,
+        "bat_speed": bat_speed_result_data
+    }
 
 
 # Load and clean data
@@ -653,6 +735,18 @@ def summary():
     video_url=request.args.get('videoUrl', '').strip("'").strip('"')
     return jsonify(get_video_summary(video_url))
 
+@app.route('/clean-up', methods=["GET"])
+def clean_up():
+    for f in genai.list_files():
+        print("  ", f.name)
+        f.delete()
+    return jsonify({"message": "All files cleaned up"})
+
+
+@app.route('/get-details', methods=["GET"])
+def details():
+    video_url=request.args.get('videoUrl', '').strip("'").strip('"')
+    return jsonify(get_video_details(video_url))
 @app.route('/generate_hr_data', methods=['GET'])
 def generate_hr_data():
     _data=[]
