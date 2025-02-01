@@ -70,6 +70,11 @@ useEffect(() => {
     }
   }, []);
 
+
+  const handleRefresh = () => {
+    loadMoreVideos()
+  }
+
   return (
     <View style={{ height: '100%' }}>
       <FlatList
@@ -88,6 +93,7 @@ useEffect(() => {
         onEndReached={loadMoreVideos}
         onRefresh={loadMoreVideos}
         refreshing={loading}
+
         ListHeaderComponent={loading ? <ActivityIndicator size="large" color="#F0F0FF" /> : null}
       />
     </View>

@@ -1,4 +1,8 @@
 import { VIDEOS_URL_1 } from '@/lib/constants';
+import { Locales } from '@/lib'
+import * as Localization from 'expo-localization'
+// const languageCode= Localization.getLocales()[0].languageCode ?? 'en'
+
 
 export async function getHomeRunVideos(page: number, perPage: number, season: number = 2024) {
   try {
@@ -25,7 +29,7 @@ export async function getTeamPlayers(url:string,year:number){
     //   throw new Error(`Error fetching players: ${response.statusText}`);
     // }
     const text = await response.text();
-    console.log('Raw response:', text);
+    // console.log('Raw response:', text);
     const sanitizedText = text.replace(/NaN/g, 'null');
     const data = JSON.parse(sanitizedText);
     return data;
@@ -50,4 +54,81 @@ export async function getHomeRunByPlayId(playId:string){
   }
 
 
+}
+
+
+export async function getPlayers(url){
+  try {
+    const response = await fetch(`${VIDEOS_URL_1}/getPlayers?videoUrl=${url}`);
+    const text = await response.text();
+    console.log('Raw response:', text);
+    const sanitizedText = text.replace(/NaN/g, 'null');
+    const data = JSON.parse(sanitizedText);
+    return data;
+  } catch (e) {
+    console.error('Error getting players:', e);
+    return []; // Return an empty array in case of an error
+  }
+}
+
+
+export async function getSummary(url){
+  try {
+    const response = await fetch(`${VIDEOS_URL_1}/summary?videoUrl=${url}`);
+    const text = await response.text();
+    console.log('Raw response:', text);
+    const sanitizedText = text.replace(/NaN/g, 'null');
+    const data = JSON.parse(sanitizedText);
+    return data;
+  } catch (e) {
+    console.error('Error getting summary:', e);
+    return []; // Return an empty array in case of an error
+  }
+}
+
+
+export async  function getPlayExplanation(url){
+  try {
+    const response = await fetch(`${VIDEOS_URL_1}/getPlayExplanation?videoUrl=${url}`);
+    const text = await response.text();
+    console.log('Raw response:', text);
+    const sanitizedText = text.replace(/NaN/g, 'null');
+    const data = JSON.parse(sanitizedText);
+    return data;
+  } catch (e) {
+    console.error('Error getting play explanation:', e);
+    return []; // Return an empty array in case of an error
+  }
+}
+
+
+
+export async function getTranslation (t: string, lang: string){
+  try {
+    const response = await fetch(`${VIDEOS_URL_1}/translate?text=${t}&lang=${lang}`);
+    console.log(`${VIDEOS_URL_1}/translate?text=${t}&lang=${lang}`)
+    const text = await response.text();
+    console.log('Raw response:', text);
+    const sanitizedText = text.replace(/NaN/g, 'null');
+    const data = JSON.parse(sanitizedText);
+    return data;
+  } catch (e) {
+    console.error('Error getting translation:', e);
+    return []; // Return an empty array in case of an error
+  }
+}
+
+
+export async function getBatSpeed(url){
+  try {
+    const response = await fetch(`${VIDEOS_URL_1}/getBatSpeed?videoUrl=${url}`);
+    const text = await response.text();
+    console.log('Raw response:', text);
+    const sanitizedText = text.replace(/NaN/g, 'null');
+    const data = JSON.parse(sanitizedText);
+    return data;
+  } catch (e) {
+    console.error('Error getting bat speed:', e);
+    return []; // Return an empty array in case of an error
+  }
 }

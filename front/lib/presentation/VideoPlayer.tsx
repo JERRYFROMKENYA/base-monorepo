@@ -1,24 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
+import { Dimensions, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { View } from '@/lib/presentation/Themed';
-import { Text, Chip, Icon } from 'react-native-paper';
+import { Text, Chip, Icon, Surface, Divider } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { Locales } from '@/lib';
 import { useEvent } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { getTeamPlayers } from '@/lib/data/mlb_data/videos'
+import { getTeamPlayers } from '@/lib/data/mlb_data/videos';
+import Url from '@/app/modals/Url';
 
 const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked, hasMetadata }: any) => {
   const router = useRouter();
   const [liked, setLiked] = useState(isLiked);
   const [teamData, setTeamData] = useState<any>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const getTeamData=()=>{
-    getTeamPlayers(item.video).then((data)=>{
-      console.log(data)
+  const getTeamData = () => {
+    getTeamPlayers(item.video, item.season).then((data) => {
+      console.log(data);
       setTeamData(data);
-    })
-  }
+    });
+  };
 
   const player = useVideoPlayer(item.video, (player) => {
     player.loop = true;
@@ -33,7 +35,6 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked, hasMetada
     } else {
       player.pause();
     }
-    // getTeamData();
   }, [index, isViewable, router]);
 
   const handleDoublePress = () => {
@@ -84,7 +85,7 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked, hasMetada
             <Chip icon={'baseball-bat'} style={styles.chip}>{`${Locales.t("exitVelocity")}: ${item.ExitVelocity} mph` || 0}</Chip>
             <Chip icon={'angle-acute'} style={styles.chip}>{`${Locales.t("launchAngle")} ${item.LaunchAngle}°` || 0}</Chip>
             <Chip icon={'clock'} style={styles.chip}>{`${item.season}` || 0}</Chip>
-            <Chip style={styles.chip} onPress={() => router.push(`/modals/${item.video}`)}>{`More...`}</Chip>
+            <Chip style={styles.chip} onPress={() => setModalVisible(true)}>{`More...`}</Chip>
           </View>
         </View>
       )}
@@ -95,10 +96,20 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked, hasMetada
         <TouchableOpacity style={styles.icon} onPress={() => { }}>
           <Icon source={'bookmark'} size={50} color={isBookmarked ? '#e4c92a' : undefined} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.icon} onPress={() => router.push(`/modals/${item.play_id}`)}>
+        <TouchableOpacity style={styles.icon} onPress={() => setModalVisible(true)}>
           <Icon source={'baseball'} size={50} />
         </TouchableOpacity>
       </View>
+
+      <Modal
+        presentationStyle={"pageSheet"}
+        animationType="slide"
+        // transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <Url url={item.play_id} onClose={()=>{setModalVisible(false)}} />
+      </Modal>
     </View>
   );
 };

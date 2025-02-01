@@ -18,7 +18,7 @@ export async function getPlayerById(Id: string) {
   try {
     const response = await fetch(`${DATA_URL_1}/players?playerId=${Id}`);
     const text = await response.text();
-    console.log('Raw response:', text);
+    // console.log('Raw response:', text);
     const sanitizedText = text.replace(/NaN/g, 'null');
     const data = JSON.parse(sanitizedText);
     return data;

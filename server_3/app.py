@@ -50,6 +50,15 @@ def process_endpoint_url(endpoint_url, pop_key=None):
 
     return df_result
 
+def upload_to_gemini(path, mime_type=None):
+  """Uploads the given file to Gemini.
+
+  See https://ai.google.dev/gemini-api/docs/prompting_with_media
+  """
+  file = genai.upload_file(path, mime_type=mime_type)
+  print(f"Uploaded file '{file.display_name}' as: {file.uri}")
+  return file
+
 
 
 
@@ -342,9 +351,11 @@ def get_teams(video_url,season):
         team_id = filtered_teams['id']
         if team_id not in team_rosters:
             team_roster_endpoint_url = f'https://statsapi.mlb.com/api/v1/teams/{team_id}/roster?season={season}'
+            print(f'team id: {season}')
             team_rosters[team_id] = process_endpoint_url(team_roster_endpoint_url, 'roster')
         team_roster = team_rosters[team_id]
         players_involved = []
+        # print(filtered_teams)
         for player in players_data:
             if player['playerName'] in team_roster['person_fullName'].values:
                 player_id = team_roster[team_roster['person_fullName'].str.contains(player['playerName'])].iloc[0].to_dict()['person_id']
@@ -356,13 +367,16 @@ def get_teams(video_url,season):
 
     return teams_
 
+
 def get_bat_speed(video_url):
     get_bat_speed_system_prompt = '''
     You are a multimodal system that analyzes videos of baseball at 1 frame per second.
-    Your job is to identify the bat speed of the player. Emphasis on the speed of the bat. Not the Exit Velocity!
+    Your job is to identify the bat speed of the player shown on the strike zone.
+    Not the Exit Velocity.
     Add the type of ball thrown in the video to the response.
-     Look at the number in the strike zone after the box, right after the batter strikes the ball and return it...
-     Use both the video and audio streams to piece together the required data
+    First crop in to the middle of the video and look at the number in the strike zone after the box, right after the batter strikes the ball and return it...
+    Use both the video and audio streams to piece together the required data
+    The bat speed is usually located along side a dot, right after the hit...
     '''
 
     class BatSpeedSchema(typing.TypedDict):
@@ -371,20 +385,63 @@ def get_bat_speed(video_url):
 
     get_bat_speed_config = genai.GenerationConfig(
         response_mime_type="application/json",
-        response_schema=BatSpeedSchema
+        response_schema=BatSpeedSchema,
+        temperature=0
     )
 
     path = "video.mp4"
     if not video_url:
         return []
-    def download_video():
+
+    def download_video(url, output_path):
         try:
-            subprocess.run(['wget', video_url, '-O', path], check=True)
+            subprocess.run(['wget', url, '-O', output_path], check=True)
         except subprocess.CalledProcessError as e:
             return jsonify({"error": f"Failed to download video: {e}"}), 500
-    download_thread = threading.Thread(target=download_video)
+
+    # Create a directory for example videos
+    example_dir = "example_videos"
+    if not os.path.exists("example_videos"):
+        os.makedirs(example_dir, exist_ok=True)
+
+    # List of example URLs and their expected outputs
+    example_data = [
+        {
+            "url": "https://sporty-clips.mlb.com/UldZYWVfWGw0TUFRPT1fRHdJRlZsQlhYd0lBQzFFRVVnQUFVZ2RRQUZsVFVGRUFDMWRUVmxaUkJ3VlZVZ05m.mp4",
+            "expected_output": {"batSpeed": 82, "ballType": "slider"}
+        },
+        {
+            "url": "https://sporty-clips.mlb.com/RFhQTU1fWGw0TUFRPT1fVlFaUlVGME1Bd0FBV2xBR1VnQUFVbGRYQUZnQVd3SUFCMTBHQkFSUVZBSUhCbGRm.mp4",
+            "expected_output": {"batSpeed": 94, "ballType": "sinker"}
+        },
+        {
+            "url": "https://sporty-clips.mlb.com/bk1SamtfWGw0TUFRPT1fQmdrQVZsUUZBbGNBQ0FZS1ZBQUFDVkJRQUZnR0JRTUFCRk5SVXdjQ0NRcGRVMUVD.mp4",
+            "expected_output": {"batSpeed": 84, "ballType": "Fair ball"}
+        },
+        {
+            "url": "https://sporty-clips.mlb.com/WGczZ05fWGw0TUFRPT1fQVFkWlhGUUZBRk1BRGxWVFZ3QUFCMVZSQUFOV1dnSUFVRjBDVXdWVEJRVlhWUW9F.mp4",
+            "expected_output": {"batSpeed": 79, "ballType": "Curveball"}
+        },
+        {
+            "url": "https://sporty-clips.mlb.com/QWFNUk9fWGw0TUFRPT1fVWdWVEFWY05CQXNBRGxNSEFBQUFDRlFDQUFOVEJ3QUFCRlpSQkZFSEJWRlRBQW9F.mp4",
+            "expected_output": {"batSpeed": 97, "ballType": "unknown"}
+        }
+    ]
+
+    # Download the main video
+    download_thread = threading.Thread(target=download_video, args=(video_url, path))
     download_thread.start()
     download_thread.join()
+
+    # Download example videos
+    example_files = []
+    for i, example in enumerate(example_data):
+        example_path = os.path.join(example_dir, f"example_{i}.mp4")
+        if not os.path.exists(example_path):
+            download_thread = threading.Thread(target=download_video, args=(example["url"], example_path))
+            download_thread.start()
+            download_thread.join()
+        example_files.append((genai.upload_file(path=example_path), example["expected_output"]))
 
     video_file = genai.upload_file(path=path)
 
@@ -401,7 +458,15 @@ def get_bat_speed(video_url):
                                   system_instruction=get_bat_speed_system_prompt,
                                   generation_config=get_bat_speed_config)
 
-    response = model.generate_content(["Analyze the following video:", video_file])
+    # Prepare the input for the model
+    inputs = ["input: "]
+    for example_file, expected_output in example_files:
+        inputs.append(example_file)
+        inputs.append(f"output: {json.dumps(expected_output)}")
+    inputs.append("input")
+    inputs.append(video_file)
+
+    response = model.generate_content(inputs)
     result_data = json.loads(response.text)
     print(response.text)
     os.remove(path)
