@@ -370,7 +370,7 @@ def get_teams(video_url,season):
 
 def get_bat_speed(video_url):
     get_bat_speed_system_prompt = '''
-    You are a multimodal system that analyzes videos of baseball at 1 frame per second.
+    You are a multimodal system that analyzes videos of baseball at 1 frame per second. Get the frame where the pitcher hits the ball and a few frames before and after.
     Your job is to identify the bat speed of the player shown on the strike zone.
     Not the Exit Velocity.
     Add the type of ball thrown in the video to the response. (Fastball, Curveball, Slider, Changeup, Sinker, Cutter, Knuckleball, Splitter, Two-Seam Fastball, Four-Seam Fastball, Palm Ball, Screwball, or Eephus.)

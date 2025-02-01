@@ -13,84 +13,9 @@ import {
 import { View } from '@/lib/presentation/Themed';
 import * as Localization from 'expo-localization';
 
-const Url = ({ url, onClose }: { url: string; onClose: any }) => {
-  const [hrData, setHrData] = useState<any>(null);
-  const [stats, setStats] = useState({
-    title: 'Loading...',
-    description: 'Loading...',
-    explanation: 'Loading...',
-    exitVelocity: 0,
-    launchAngle: 0,
-    batSpeed: 0,
-    ballType: '',
-    hitDistance: '',
-  });
+const Url = ({ onClose, hrData, stats }: { onClose: any, hrData: any, stats: any }) => {
 
-  const languageCode = Localization.getLocales()[0].languageCode ?? 'en';
 
-  useEffect(() => {
-    if (!url) return console.error('URL parameter is missing.');
-
-    const fetchData = async () => {
-      try {
-        const [hr_data] = await getHomeRunByPlayId(url);
-        if (!hr_data) return console.error('No home run data found.');
-
-        setHrData(hr_data);
-
-        // const [bat_data, summary, explanationData] = await Promise.all([
-        //   getBatSpeed(hr_data.video),
-        //   getSummary(hr_data.video),
-        //   getPlayExplanation(hr_data.video),
-        // ]);
-
-        const bat_data = await getBatSpeed(hr_data.video);
-        const summary = await getSummary(hr_data.video);
-        const explanationData = await getPlayExplanation(hr_data.video);
-
-        let newStats = {
-          title: hr_data.title || 'No Title Available',
-          description: summary?.summary || 'No Description Available',
-          explanation: explanationData?.explanation || 'No Explanation Available',
-          exitVelocity: hr_data.ExitVelocity || 0,
-          launchAngle: hr_data.LaunchAngle || 0,
-          batSpeed: bat_data?.batSpeed || 0,
-          ballType: bat_data?.ballType || 'Unknown',
-          hitDistance: hr_data.HitDistance || 'Unknown',
-        };
-
-        if (languageCode !== 'en') {
-          newStats = await translateContent(newStats);
-        }
-
-        setStats(newStats);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData();
-  }, [url]);
-
-  const translateContent = async (data: any) => {
-    try {
-      const [titleTranslation, descriptionTranslation, explanationTranslation] = await Promise.all([
-        getTranslation(data.title, languageCode),
-        getTranslation(data.description, languageCode),
-        data.explanation ? getTranslation(data.explanation, languageCode) : { translation: '' },
-      ]);
-
-      return {
-        ...data,
-        title: titleTranslation?.translation || data.title,
-        description: descriptionTranslation?.translation || data.description,
-        explanation: explanationTranslation?.translation || data.explanation,
-      };
-    } catch (error) {
-      console.error('Error fetching translations:', error);
-      return data;
-    }
-  };
 
   return (
     <Surface>
@@ -101,7 +26,19 @@ const Url = ({ url, onClose }: { url: string; onClose: any }) => {
       <ScrollView style={styles.scrollView}>
         {hrData && (
           <Surface style={styles.surface}>
-            <Text variant={'titleMedium'}>{stats.title}</Text>
+            <Text variant={'titleLarge'}>{stats.title}</Text>
+          </Surface>
+        )}
+
+        {stats.description && (
+          <Surface style={styles.textCard}>
+            <Text variant={'bodyMedium'}>{stats.description}</Text>
+          </Surface>
+        )}
+
+        {stats.explanation && (
+          <Surface style={styles.textCard}>
+            <Text variant={'bodyMedium'}>{stats.explanation}</Text>
           </Surface>
         )}
 
@@ -124,17 +61,9 @@ const Url = ({ url, onClose }: { url: string; onClose: any }) => {
           </Surface>
         </View>
 
-        {stats.description && (
-          <Surface style={styles.textCard}>
-            <Text>{stats.description}</Text>
-          </Surface>
-        )}
 
-        {stats.explanation && (
-          <Surface style={styles.textCard}>
-            <Text>{stats.explanation}</Text>
-          </Surface>
-        )}
+
+
 
         <Divider style={{ marginBottom: 100, marginTop: 100 }} />
       </ScrollView>

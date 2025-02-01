@@ -2,19 +2,28 @@ import React, { useEffect, useState, useCallback, useRef, memo } from 'react';
 import { Dimensions, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { View } from '@/lib/presentation/Themed';
 import { Text, Chip, Icon } from 'react-native-paper';
-import { useRouter } from 'expo-router';
+import { useRouter, useSegments } from 'expo-router'
 import { Locales } from '@/lib';
 import { useEvent } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { getTeamPlayers } from '@/lib/data/mlb_data/videos';
+import {
+  getBatSpeed,
+  getHomeRunByPlayId,
+  getPlayExplanation,
+  getSummary,
+  getTeamPlayers, getTranslation,
+} from '@/lib/data/mlb_data/videos'
 import Url from '@/app/modals/Url';
+import * as Localization from 'expo-localization'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const DOUBLE_PRESS_DELAY = 500;
 
 const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) => {
-  const router = useRouter();
+  // const router = useRouter();
+  const segments = useSegments();
+  const inPlayableZone = segments[1] === 'for_you';
   const [liked, setLiked] = useState(isLiked);
   const [teamData, setTeamData] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -30,13 +39,15 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
 
   useEffect(() => {
     isViewable ? player.play() : player.pause();
-  }, [isViewable]);
+
+    if (!inPlayableZone) player.pause();
+  }, [isViewable, segments]);
 
   const toggleLike = useCallback(() => setLiked((prev) => !prev), []);
 
   const togglePlayPause = useCallback(() => {
     isPlaying ? player.pause() : player.play();
-  }, [isPlaying]);
+  }, [isPlaying, player]);
 
   const debouncePress = useCallback((singlePress: () => void, doublePress: () => void) => {
     if (timerRef.current) {
@@ -50,6 +61,84 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
       }, DOUBLE_PRESS_DELAY);
     }
   }, []);
+
+
+  //data fetching
+  const [hrData, setHrData] = useState<any>(null);
+  const [stats, setStats] = useState({
+    title: 'Loading...',
+    description: 'Loading...',
+    explanation: 'Loading...',
+    exitVelocity: 0,
+    launchAngle: 0,
+    batSpeed: 0,
+    ballType: '',
+    hitDistance: '',
+  });
+  const languageCode = Localization.getLocales()[0].languageCode ?? 'en';
+  useEffect(() => {
+    // if (!url) return console.error('URL parameter is missing.');
+    if (!inPlayableZone) return
+    const fetchData = async () => {
+      try {
+        const [hr_data] = await getHomeRunByPlayId(item.play_id);
+        if (!hr_data) return console.error('No home run data found.');
+
+        setHrData(hr_data);
+
+        const [bat_data, summary, explanationData] = await Promise.all([
+          getBatSpeed(hr_data.video),
+          getSummary(hr_data.video),
+          getPlayExplanation(hr_data.video),
+        ]);
+
+        // const bat_data = await getBatSpeed(hr_data.video);
+        // const summary = await getSummary(hr_data.video);
+        // const explanationData = await getPlayExplanation(hr_data.video);
+
+        let newStats = {
+          title: hr_data.title || 'No Title Available',
+          description: summary?.summary || 'No Description Available',
+          explanation: explanationData?.explanation || 'No Explanation Available',
+          exitVelocity: hr_data.ExitVelocity || 0,
+          launchAngle: hr_data.LaunchAngle || 0,
+          batSpeed: bat_data?.batSpeed || 0,
+          ballType: bat_data?.ballType || 'Unknown',
+          hitDistance: hr_data.HitDistance || 'Unknown',
+        };
+
+        if (languageCode !== 'en') {
+          newStats = await translateContent(newStats);
+        }
+
+        setStats(newStats);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, [item]);
+
+  const translateContent = async (data: any) => {
+    try {
+      const [titleTranslation, descriptionTranslation, explanationTranslation] = await Promise.all([
+        getTranslation(data.title, languageCode),
+        getTranslation(data.description, languageCode),
+        data.explanation ? getTranslation(data.explanation, languageCode) : { translation: '' },
+      ]);
+
+      return {
+        ...data,
+        title: titleTranslation?.translation || data.title,
+        description: descriptionTranslation?.translation || data.description,
+        explanation: explanationTranslation?.translation || data.explanation,
+      };
+    } catch (error) {
+      console.error('Error fetching translations:', error);
+      return data;
+    }
+  };
 
   return (
     <View>
@@ -99,7 +188,7 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <Url url={item.play_id} onClose={() => setModalVisible(false)} />
+        <Url item={item} hrData={hrData} stats={stats} url={item.play_id} onClose={() => setModalVisible(false)} />
       </Modal>
     </View>
   );
