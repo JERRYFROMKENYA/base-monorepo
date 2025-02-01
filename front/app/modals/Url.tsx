@@ -38,15 +38,15 @@ const Url = ({ url, onClose }: { url: string; onClose: any }) => {
 
         setHrData(hr_data);
 
-        // const [bat_data, summary, explanationData] = await Promise.all([
-        //   getBatSpeed(hr_data.video),
-        //   getSummary(hr_data.video),
-        //   getPlayExplanation(hr_data.video),
-        // ]);
+        const [bat_data, summary, explanationData] = await Promise.all([
+          getBatSpeed(hr_data.video),
+          getSummary(hr_data.video),
+          getPlayExplanation(hr_data.video),
+        ]);
 
-        const bat_data = await getBatSpeed(hr_data.video);
-        const summary = await getSummary(hr_data.video);
-        const explanationData = await getPlayExplanation(hr_data.video);
+        // const bat_data = await getBatSpeed(hr_data.video);
+        // const summary = await getSummary(hr_data.video);
+        // const explanationData = await getPlayExplanation(hr_data.video);
 
         let newStats = {
           title: hr_data.title || 'No Title Available',
