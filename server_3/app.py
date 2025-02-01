@@ -409,10 +409,6 @@ def get_bat_speed(video_url):
         {
             "url": "https://sporty-clips.mlb.com/UldZYWVfWGw0TUFRPT1fRHdJRlZsQlhYd0lBQzFFRVVnQUFVZ2RRQUZsVFVGRUFDMWRUVmxaUkJ3VlZVZ05m.mp4",
             "expected_output": {"batSpeed": 82, "ballType": "slider"}
-        },
-        {
-            "url": "https://sporty-clips.mlb.com/WGczZ05fWGw0TUFRPT1fQVFkWlhGUUZBRk1BRGxWVFZ3QUFCMVZSQUFOV1dnSUFVRjBDVXdWVEJRVlhWUW9F.mp4",
-            "expected_output": {"batSpeed": 79, "ballType": "Curveball"}
         }
     ]
 
