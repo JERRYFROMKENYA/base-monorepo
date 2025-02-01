@@ -7,7 +7,7 @@ import { Locales } from '@/lib';
 import { useEvent } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import {
-  getBatSpeed,
+  getBatSpeed, getDetails,
   getHomeRunByPlayId,
   getPlayExplanation,
   getSummary,
@@ -78,7 +78,7 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
   const languageCode = Localization.getLocales()[0].languageCode ?? 'en';
   useEffect(() => {
     // if (!url) return console.error('URL parameter is missing.');
-    if (!inPlayableZone) return
+    if (!inPlayableZone&&!isViewable) return
     const fetchData = async () => {
       try {
         const [hr_data] = await getHomeRunByPlayId(item.play_id);
@@ -86,11 +86,19 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
 
         setHrData(hr_data);
 
-        const [bat_data, summary, explanationData] = await Promise.all([
-          getBatSpeed(hr_data.video),
-          getSummary(hr_data.video),
-          getPlayExplanation(hr_data.video),
-        ]);
+        // const [bat_data, summary, explanationData] = await Promise.all([
+        //   getBatSpeed(hr_data.video),
+        //   getSummary(hr_data.video),
+        //   getPlayExplanation(hr_data.video),
+        // ]);
+        const allData= await getDetails(hr_data.video);
+        console.log(allData);
+        const bat_data= allData.bat_speed;
+        const summary= allData.summary;
+        const explanationData= allData.explanation;
+
+
+
 
         // const bat_data = await getBatSpeed(hr_data.video);
         // const summary = await getSummary(hr_data.video);
@@ -118,7 +126,7 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
     };
 
     fetchData();
-  }, [item]);
+  }, [item, isViewable]);
 
   const translateContent = async (data: any) => {
     try {

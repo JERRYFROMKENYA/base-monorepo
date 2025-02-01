@@ -322,14 +322,15 @@ def get_teams(video_url,season):
     if video_file.state.name == "FAILED":
         return jsonify({"error": "Video processing failed"}), 500
 
-    model = genai.GenerativeModel(model_name="models/gemini-2.0-flash-exp",
+    model = genai.GenerativeModel(model_name="models/gemini-1.5-flash",
                                   system_instruction=get_players_seen_system_prompt,
                                   generation_config=get_players_seen_config)
 
     response = model.generate_content(["Analyze the following video:", video_file])
     players_data = json.loads(response.text)['players']
+    print(players_data)
 
-    model = genai.GenerativeModel(model_name="models/gemini-2.0-flash-exp",
+    model = genai.GenerativeModel(model_name="models/gemini-1.5-flash",
                                   system_instruction=get_teams_system_prompt,
                                   generation_config=get_teams_config)
 
@@ -349,11 +350,14 @@ def get_teams(video_url,season):
             continue
         filtered_teams = teams[teams.apply(lambda row: row.astype(str).str.contains(team_name, case=False, na=False).any(), axis=1)].iloc[0]
         team_id = filtered_teams['id']
+
         if team_id not in team_rosters:
             team_roster_endpoint_url = f'https://statsapi.mlb.com/api/v1/teams/{team_id}/roster?season={season}'
             print(f'team id: {season}')
             team_rosters[team_id] = process_endpoint_url(team_roster_endpoint_url, 'roster')
         team_roster = team_rosters[team_id]
+
+
         players_involved = []
         # print(filtered_teams)
         for player in players_data:

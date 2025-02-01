@@ -1,7 +1,7 @@
 import { VIDEOS_URL_1 } from '@/lib/constants';
 
 const MAX_RETRIES = 10;
-const RETRY_DELAY = 0; // Start with 1 second delay
+const RETRY_DELAY = 1000; // Start with 1 second delay
 
 async function fetchWithRetry(url, retries = MAX_RETRIES, delay = RETRY_DELAY) {
   for (let attempt = 1; attempt <= retries; attempt++) {
@@ -60,5 +60,11 @@ export async function getTranslation(t, lang) {
 
 export async function getBatSpeed(url) {
   const requestUrl = `${VIDEOS_URL_1}/getBatSpeed?videoUrl=${url}`;
+  return await fetchWithRetry(requestUrl);
+}
+
+
+export async function getDetails(url) {
+  const requestUrl = `${VIDEOS_URL_1}/get-details?videoUrl=${url}`;
   return await fetchWithRetry(requestUrl);
 }
