@@ -461,7 +461,7 @@ def get_video_details(video_url):
             response_schema=schema
         )
         model = genai.GenerativeModel(
-            model_name="models/gemini-2.0-flash-exp",
+            model_name="models/gemini-1.5-flash",
             system_instruction=system_prompt,
             generation_config=config
         )
@@ -735,11 +735,22 @@ def summary():
     video_url=request.args.get('videoUrl', '').strip("'").strip('"')
     return jsonify(get_video_summary(video_url))
 
+
 @app.route('/clean-up', methods=["GET"])
 def clean_up():
+    def delete_file(file):
+        print("  ", file.name)
+        file.delete()
+
+    threads = []
     for f in genai.list_files():
-        print("  ", f.name)
-        f.delete()
+        thread = threading.Thread(target=delete_file, args=(f,))
+        thread.start()
+        threads.append(thread)
+
+    for thread in threads:
+        thread.join()
+
     return jsonify({"message": "All files cleaned up"})
 
 
