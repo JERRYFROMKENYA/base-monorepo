@@ -140,3 +140,4 @@ wheel
 wrapt
 yarl
 zipp
+gunicorn
