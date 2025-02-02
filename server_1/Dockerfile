@@ -27,4 +27,4 @@ EXPOSE 5000
 
 # Run the application
 # Run the application
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "run:run"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:run"]
