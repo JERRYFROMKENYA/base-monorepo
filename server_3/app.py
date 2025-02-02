@@ -358,9 +358,10 @@ def get_teams(video_url,season,title):
 
         teams_endpoint_url = f"{alt_ep}:5000/teams?q={team_name}"
         teams = requests.get(teams_endpoint_url, ).json()
+        if not teams: continue
         print(teams[0])
         teams=teams[0]
-        if not teams[0]: continue
+
         team_id = teams['id']
         print(f'team id: {team_id}')
 
