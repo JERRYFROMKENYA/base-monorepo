@@ -3,14 +3,14 @@ import { ActivityIndicator, Surface } from 'react-native-paper';
 import { Dimensions, FlatList, StyleSheet, View } from 'react-native';
 import { getHomeRunVideos } from '@/lib/data/mlb_data/videos';
 import VideoPlayer from '@/lib/presentation/VideoPlayer';
-import { getWatchedVideos, viewHomeRun } from '@/lib/data/pocketbase/video';
+import { getCurrentPage, getWatchedVideos, handlePageUpdate, viewHomeRun } from '@/lib/data/pocketbase/video';
 import { useAuth } from '@/lib/data/pocketbase/auth';
 import { usePocketBase } from '@/lib/data/pocketbase';
 
 const ForYou = () => {
   const [videos, setVideos] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { pb } = usePocketBase();
@@ -32,16 +32,27 @@ const ForYou = () => {
         .map((video: any, index: number) => ({ ...video, id: (page - 1) * ITEMS_PER_PAGE + index }));
 
       setVideos((prev) => [...prev, ...filteredData]);
+      await handlePageUpdate(page, user, pb);
     } catch (error) {
       console.error('Error fetching videos:', error);
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
+useEffect(() => {
+  if (currentPage === 0) {
+    getCurrentPage(user, pb).then((page) => {
+      if (page === 0 || page === undefined) {
+        setCurrentPage(1);
+      } else {
+        setCurrentPage(page);
+        console.log("Current Page: ", page);
+      }
+    });
+  } else {
     fetchVideos(currentPage);
-  }, [currentPage]);
+  }
+}, [currentPage]);
 
   const loadMoreVideos = () => {
     if (!loading) setCurrentPage((prev) => prev + 1);
@@ -73,12 +84,13 @@ const ForYou = () => {
         viewabilityConfig={{ viewAreaCoveragePercentThreshold: 90 }}
         onEndReached={loadMoreVideos}
         onEndReachedThreshold={0.5}
+        onRefresh={loadMoreVideos}
         refreshing={loading}
         ListHeaderComponent={loading ? <ActivityIndicator size="large" color="#F0F0FF" /> : null}
         removeClippedSubviews
         initialNumToRender={5} // Render only the first few items for performance
         maxToRenderPerBatch={5} // Optimize memory usage
-        windowSize={21} // Reduce the number of items kept in memory
+        windowSize={11} // Reduce the number of items kept in memory
         getItemLayout={(data, index) => ({
           length: Dimensions.get('window').height,
           offset: Dimensions.get('window').height * index,

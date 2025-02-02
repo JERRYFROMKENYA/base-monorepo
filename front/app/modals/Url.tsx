@@ -15,7 +15,6 @@ const Url = ({ onClose, hrData, stats, teamData }: { onClose: any, hrData: any, 
   useEffect(() => {
     setExplanation(!moreExplanation ? stats.explanation.substring(0, 200) : stats.explanation)
     setDescription(!moreDescription ? stats.description.substring(0, 200) : stats.description)
-    console.log(teamData)
   }, [moreExplanation, moreDescription, stats, teamData]);
 
 
@@ -54,14 +53,14 @@ const Url = ({ onClose, hrData, stats, teamData }: { onClose: any, hrData: any, 
         )}
 
         {
-          teamData && (
+         (teamData &&teamData.length>0)&& (
             <Surface elevation={0} style={{...styles.textCard}}>
               <Text variant={'titleSmall'} style={{ fontWeight: 'bold', marginBottom:5 }}>Teams</Text>
               <ScrollView horizontal>
                 {teamData.map((team: any, index: number) => (
                   <Surface key={index} style={{ ...styles.textCard, margin:5,
                     justifyContent:"center", alignContent:"center"}}>
-                    <Avatar.Image style={{backgroundColor:"none"}} source={() => <SvgUri uri={team.logo} />}/>
+                    <Avatar.Image  source={() => <SvgUri uri={team.logo} />}/>
                     <Text variant={'bodyMedium'}>{team.name}</Text>
                     <Text variant={'bodySmall'}>{team.abbreviation}</Text>
                   </Surface>
@@ -70,7 +69,7 @@ const Url = ({ onClose, hrData, stats, teamData }: { onClose: any, hrData: any, 
             </Surface>
           )
         }{
-  teamData && (
+  (teamData && teamData.length>0)&&(
     <Surface elevation={0} style={{...styles.textCard}}>
       <ScrollView horizontal>
         {teamData.map((team: any, index: number) => (

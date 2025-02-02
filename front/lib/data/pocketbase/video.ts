@@ -41,3 +41,59 @@ try {
     return false
   }
 }
+
+
+export async function createPageRecord(page:number,user:any,pb:any){
+  try{
+    const data = {
+      'page': page,
+      'user': user.id,
+    }
+    const record = await pb.collection('page').create(data)
+    return !!record
+  }catch (e) {
+    console.log(e)
+    return false
+  }
+}
+
+export async function getCurrentPage(user:any,pb:any){
+  try{
+    const record = await pb.collection('page').getFirstListItem(`user="${user.id}"`)
+    console.log(record)
+    if (!record){
+      await createPageRecord(1,user,pb)
+    }
+    return record ? record.page : 1
+  }catch (e) {
+    console.log(e)
+    await createPageRecord(1,user,pb)
+    return 1
+  }
+}
+
+export async function updatePageRecord(page:number,user:any,pb:any){
+  try{
+    const record = await pb.collection('page').getFirstListItem(`user="${user.id}"`)
+    if (record){
+      await pb.collection('page').update(record.id,{page:page})
+      return true
+    }
+    await createPageRecord(page, user, pb)
+    return false
+  }catch (e) {
+    console.log(e)
+    return false
+  }
+}
+
+export async function handlePageUpdate(page:number,user:any,pb:any){
+  getCurrentPage(user,pb).then((currentPage)=>{
+    if (!currentPage){
+      createPageRecord(page,user,pb)
+    }
+    if (currentPage!==page){
+      updatePageRecord(page,user,pb)
+    }
+  })
+}

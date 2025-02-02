@@ -26,5 +26,5 @@ COPY . .
 EXPOSE 9000
 
 # Run the application
-CMD ["gunicorn", "-w", "6", "-b", "0.0.0.0:9000", "app:app"]
+CMD ["gunicorn", "-w", "8", "-b", "0.0.0.0:9000", "app:app"]
 

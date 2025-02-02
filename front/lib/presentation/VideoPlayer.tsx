@@ -32,7 +32,7 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
   const player = useVideoPlayer(item.video, (player) => {
     player.loop = true;
     if (isViewable) player.play();
-    player.bufferOptions = { preferredForwardBufferDuration: 1 };
+    // player.bufferOptions = { preferredForwardBufferDuration: 1 };
   });
 
   const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
@@ -83,7 +83,7 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
   const languageCode = Localization.getLocales()[0].languageCode ?? 'en';
   useEffect(() => {
     // if (!url) return console.error('URL parameter is missing.');
-    if (!inPlayableZone||!isViewable) return
+    if (!inPlayableZone) return
     const fetchData = async () => {
       try {
         const [hr_data] = await getHomeRunByPlayId(item.play_id);
