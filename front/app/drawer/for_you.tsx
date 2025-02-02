@@ -21,15 +21,12 @@ const ForYou = () => {
     if (loading) return; // Prevent duplicate fetches
     try {
       setLoading(true);
-
       // Fetch videos and watched list in parallel
       const [data, watchedList] = await Promise.all([
         getHomeRunVideos(page, ITEMS_PER_PAGE),
         getWatchedVideos(user, pb),
       ]);
-
       const watchedPlayIds = new Set(watchedList.map((video: any) => video.play_id));
-
       const filteredData = data
         .filter((video: any) => !watchedPlayIds.has(video.play_id))
         .map((video: any, index: number) => ({ ...video, id: (page - 1) * ITEMS_PER_PAGE + index }));
