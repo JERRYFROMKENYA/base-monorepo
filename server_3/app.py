@@ -34,6 +34,7 @@ def load_newline_delimited_json(url):
 
 def process_endpoint_url(endpoint_url, pop_key=None):
     json_result = requests.get(endpoint_url).content
+    print(json_result)
     data = json.loads(json_result)
 
     if not data:
@@ -66,6 +67,7 @@ app = Flask(__name__)
 
 # Configure API key
 API_KEY = os.getenv('GOOGLE_API_KEY')
+alt_ep = os.getenv('ALT_EP')
 genai.configure(api_key=API_KEY)
 
 # Define a custom settings object with a timeout parameter
@@ -340,18 +342,25 @@ def get_teams(video_url,season):
     os.remove(path)
     teams_ = []
 
-    teams_endpoint_url = f'https://statsapi.mlb.com/api/v1/teams'
-    teams = process_endpoint_url(teams_endpoint_url, 'teams')
+    # teams_endpoint_url = f'https://statsapi.mlb.com/api/v1/teams'
+    # teams = process_endpoint_url(teams_endpoint_url, 'teams')
 
     team_rosters = {}
     for team in result_data["teams"]:
         team_name = team['teamName']
         if not team_name:
             continue
-        filtered_teams = teams[teams.apply(lambda row: row.astype(str).str.contains(team_name, case=False, na=False).any(), axis=1)].iloc[0]
-        team_id = filtered_teams['id']
+        filtered_teams = []
+
+        teams_endpoint_url = f"{alt_ep}:5000/teams?q={team_name}"
+        teams = requests.get(teams_endpoint_url, ).json()
+        print(teams[0])
+        teams=teams[0]
+        team_id = teams['id']
+        print(f'team id: {team_id}')
 
         if team_id not in team_rosters:
+            if season == None or season == '': season=2024
             team_roster_endpoint_url = f'https://statsapi.mlb.com/api/v1/teams/{team_id}/roster?season={season}'
             print(f'team id: {season}')
             team_rosters[team_id] = process_endpoint_url(team_roster_endpoint_url, 'roster')
@@ -364,9 +373,9 @@ def get_teams(video_url,season):
             if player['playerName'] in team_roster['person_fullName'].values:
                 player_id = team_roster[team_roster['person_fullName'].str.contains(player['playerName'])].iloc[0].to_dict()['person_id']
                 players_involved.append({'id': player_id, 'name': player['playerName']})
-        filtered_teams['players'] = players_involved
-        filtered_teams['logo'] = f'https://www.mlbstatic.com/team-logos/{team_id}.svg'
-        teams_.append(filtered_teams.to_dict())
+        teams['players'] = players_involved
+        teams['logo'] = f'https://www.mlbstatic.com/team-logos/{team_id}.svg'
+        teams_.append(teams)
         print(teams_)
 
     return teams_

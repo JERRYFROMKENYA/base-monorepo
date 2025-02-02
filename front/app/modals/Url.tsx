@@ -14,7 +14,15 @@ import { View } from '@/lib/presentation/Themed';
 import * as Localization from 'expo-localization';
 
 const Url = ({ onClose, hrData, stats }: { onClose: any, hrData: any, stats: any }) => {
+  const [moreDescription, setMoreDescription] = useState<boolean>(false);
+  const [moreExplanation, setMoreExplanation] = useState<boolean>(false);
+  const [explanation, setExplanation] = useState<string>(stats.explanation.length > 200 ? stats.explanation.substring(0, 200) : stats.explanation);
+  const [description, setDescription] = useState<string>(stats.description.length > 200 ? stats.description.substring(0, 200) : stats.description);
 
+  useEffect(() => {
+    setExplanation(!moreExplanation ? stats.explanation.substring(0, 200) : stats.explanation)
+    setDescription(!moreDescription ? stats.description.substring(0, 200) : stats.description)
+  }, [moreExplanation, moreDescription]);
 
 
   return (
@@ -32,22 +40,28 @@ const Url = ({ onClose, hrData, stats }: { onClose: any, hrData: any, stats: any
 
         {stats.description && (
           <Surface style={styles.textCard}>
-            <Text variant={'bodyMedium'}>{stats.description}</Text>
+            <Text variant={'titleSmall'} style={{ fontWeight: 'bold', marginBottom:5 }}>Description</Text>
+            <Text variant={'bodyMedium'}>{description}</Text>
+            {<Text onPress={()=>{setMoreDescription(!moreDescription)}} variant={'bodyMedium'}
+                   style={{ fontWeight: 'bold' }}>{!moreDescription?'...more':'...less'}</Text>}
           </Surface>
         )}
 
         {stats.explanation && (
           <Surface style={styles.textCard}>
-            <Text variant={'bodyMedium'}>{stats.explanation}</Text>
+            <Text variant={'titleSmall'} style={{ fontWeight: 'bold', marginBottom:5 }}>✨Play Explanation</Text>
+            <Text variant={'bodyMedium'}>{explanation}</Text>
+            {<Text onPress={()=>{setMoreExplanation(!moreExplanation)}} variant={'bodyMedium'}
+                   style={{ fontWeight: 'bold' }}>{!moreExplanation?'...more':'...less'}</Text>}
           </Surface>
         )}
-
+        <Text variant={'titleSmall'} style={{ fontWeight: 'bold', marginVertical:7, marginLeft:20 }}>✨Play Statistics</Text>
         <View style={styles.view}>
           {[
-            { value: `${stats.exitVelocity} mph`, label: 'exitVelocity' },
-            { value: `${stats.launchAngle}°`, label: 'launchAngle' },
-            { value: `${stats.batSpeed} mph`, label: 'batSpeed' },
-            { value: stats.ballType, label: 'ballType', style: { fontSize: 25 } },
+            { value: `${stats.exitVelocity} mph`, label: 'exitVelocity', style: {  height:"90%" }  },
+            { value: `${stats.launchAngle}°`, label: 'launchAngle', style: { fontSize: 48,  height:"90%", alignSelf: "center", paddingTop:7 }  },
+            { value: `${stats.batSpeed} mph`, label: 'batSpeed', style: {  height:"90%" } },
+            { value: stats.ballType, label: 'ballType', style: { fontSize: 24, height:"90%", } },
           ].map((stat, index) => (
             <Surface key={index} style={styles.statCard}>
               <Text variant={'displaySmall'} style={stat.style}>{stat.value}</Text>
@@ -66,6 +80,8 @@ const Url = ({ onClose, hrData, stats }: { onClose: any, hrData: any, stats: any
 
 
         <Divider style={{ marginBottom: 100, marginTop: 100 }} />
+        <Text variant={'bodySmall'}>Be sure to verify the data, AI can make mistakes too.</Text>
+        <Text variant={'bodySmall'}>✨ Powered by Gemini</Text>
       </ScrollView>
     </Surface>
   );
