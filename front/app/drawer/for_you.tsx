@@ -86,7 +86,7 @@ useEffect(() => {
         onEndReachedThreshold={0.5}
         onRefresh={loadMoreVideos}
         refreshing={loading}
-        ListHeaderComponent={loading ? <ActivityIndicator size="large" color="#F0F0FF" /> : null}
+        ListFooterComponent={loading  ? <ActivityIndicator size="large" color="#F0F0FF" /> : null}
         removeClippedSubviews
         initialNumToRender={5} // Render only the first few items for performance
         maxToRenderPerBatch={5} // Optimize memory usage
