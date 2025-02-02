@@ -13,6 +13,10 @@ import time
 import requests
 
 
+PRO_MODEL="models/gemini-1.5-pro"
+FLASH_MODEL_2="models/gemini-2.0-flash-exp"
+FLASH_MODEL_1_5="models/gemini-1.5-flash"
+
 def load_newline_delimited_json(url):
     try:
         response = requests.get(url)
@@ -468,7 +472,7 @@ def get_video_details(video_url):
     if video_file.state.name == "FAILED":
         return jsonify({"error": "Video processing failed"}), 500
 
-    def generate_content(system_prompt, schema, inputs):
+    def generate_content(system_prompt, schema, inputs, model_name="models/gemini-1.5-flash"):
         config = genai.GenerationConfig(
             response_mime_type="application/json",
             response_schema=schema
@@ -488,7 +492,8 @@ def get_video_details(video_url):
         Use both the video and audio streams to piece together the required data
         ''',
         typing.TypedDict('VideoSummarySchema', {'summary': str}),
-        ["give me highlights of the above game", video_file]
+        ["give me highlights of the above game", video_file],
+        PRO_MODEL
     )
 
     explanation_result_data = generate_content(
@@ -499,7 +504,8 @@ def get_video_details(video_url):
         Use both the video and audio streams to piece together the required data
         ''',
         typing.TypedDict('PlayExplanationSchema', {'explanation': str}),
-        ["Analyze the following video:", video_file]
+        ["Analyze the following video:", video_file],
+        PRO_MODEL
     )
 
     bat_speed_result_data = generate_content(
@@ -513,7 +519,8 @@ def get_video_details(video_url):
         The bat speed is usually located along side a dot, right after the hit...
         ''',
         typing.TypedDict('BatSpeedSchema', {'batSpeed': int, 'ballType': str}),
-        ["input: ", video_file]
+        ["input: ", video_file],
+        FLASH_MODEL_1_5
     )
 
     os.remove(path)

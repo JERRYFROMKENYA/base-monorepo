@@ -79,9 +79,10 @@ const Url = ({ onClose, hrData, stats }: { onClose: any, hrData: any, stats: any
 
 
 
-        <Divider style={{ marginBottom: 100, marginTop: 100 }} />
+        <Divider style={{ marginBottom: 50, marginTop: 50 }} />
         <Text variant={'bodySmall'}>Be sure to verify the data, AI can make mistakes too.</Text>
         <Text variant={'bodySmall'}>✨ Powered by Gemini</Text>
+        <Divider style={{ marginBottom: 100, marginTop: 100 }} />
       </ScrollView>
     </Surface>
   );

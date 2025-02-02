@@ -48,19 +48,24 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
   const togglePlayPause = useCallback(() => {
     isPlaying ? player.pause() : player.play();
   }, [isPlaying, player]);
-
-  const debouncePress = useCallback((singlePress: () => void, doublePress: () => void) => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-      doublePress();
+  let timer: NodeJS.Timeout | null = null;
+  const TIMEOUT = 500;
+  const debounce = (onSingle: () => void, onDouble: () => void) => {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+      onDouble();
     } else {
-      timerRef.current = setTimeout(() => {
-        timerRef.current = null;
-        singlePress();
-      }, DOUBLE_PRESS_DELAY);
+      timer = setTimeout(() => {
+        timer = null;
+        onSingle();
+      }, TIMEOUT);
     }
-  }, []);
+  };
+
+  const handleOnPress = () => {
+    debounce(togglePlayPause, toggleLike);
+  };
 
 
   //data fetching
@@ -78,7 +83,7 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
   const languageCode = Localization.getLocales()[0].languageCode ?? 'en';
   useEffect(() => {
     // if (!url) return console.error('URL parameter is missing.');
-    if (!inPlayableZone&&!isViewable) return
+    if (!inPlayableZone||!isViewable) return
     const fetchData = async () => {
       try {
         const [hr_data] = await getHomeRunByPlayId(item.play_id);
@@ -152,10 +157,9 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
     <View>
       <TouchableOpacity
         style={styles.touchableContainer}
-        onPress={() => debouncePress(togglePlayPause, toggleLike)}
-        delayLongPress={300}
+        onPress={handleOnPress}
       >
-        <VideoView style={styles.video} player={player} contentFit="cover" nativeControls={false} />
+        <VideoView  style={styles.video} player={player} contentFit="cover" nativeControls={false} />
       </TouchableOpacity>
 
       {item.title && (

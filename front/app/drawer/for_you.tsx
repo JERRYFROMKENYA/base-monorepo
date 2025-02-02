@@ -15,7 +15,7 @@ const ForYou = () => {
   const { user } = useAuth();
   const { pb } = usePocketBase();
 
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 21;
 
   const fetchVideos = async (page: number) => {
     if (loading) return; // Prevent duplicate fetches
@@ -81,7 +81,7 @@ const ForYou = () => {
         removeClippedSubviews
         initialNumToRender={5} // Render only the first few items for performance
         maxToRenderPerBatch={5} // Optimize memory usage
-        windowSize={11} // Reduce the number of items kept in memory
+        windowSize={21} // Reduce the number of items kept in memory
         getItemLayout={(data, index) => ({
           length: Dimensions.get('window').height,
           offset: Dimensions.get('window').height * index,
