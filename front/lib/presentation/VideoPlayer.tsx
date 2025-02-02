@@ -124,6 +124,9 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
           newStats = await translateContent(newStats);
         }
 
+        const teams = await getTeamPlayers(hr_data.video, hr_data.season, hr_data.title);
+        setTeamData(teams);
+
         setStats(newStats);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -200,7 +203,7 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <Url item={item} hrData={hrData} stats={stats} url={item.play_id} onClose={() => setModalVisible(false)} />
+        <Url item={item} hrData={hrData} stats={stats} url={item.play_id} teamData={teamData} onClose={() => setModalVisible(false)} />
       </Modal>
     </View>
   );

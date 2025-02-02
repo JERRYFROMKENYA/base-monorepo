@@ -266,7 +266,7 @@ def get_play_explanation(video_url):
 
     return result_data
 
-def get_teams(video_url,season):
+def get_teams(video_url,season,title):
     get_teams_system_prompt = '''
     You are a multimodal system that analyzes videos of baseball at 1 frame per second.
     Your job is to identify the teams playing in the video.
@@ -286,9 +286,8 @@ def get_teams(video_url,season):
     )
 
     get_players_seen_system_prompt = '''
-        You are a multimodal system that analyzes videos of baseball at 1 frame per second.
-        Your job is to identify the players seen in the video and return their names.
-        Use both the video and audio streams to piece together the required data
+        You are a baseball system whose expertise is to  analyze titles.
+        Your job is to identify the players names in the titles and return their names.
         '''
 
     class PlayerSchema(typing.TypedDict):
@@ -332,8 +331,9 @@ def get_teams(video_url,season):
                                   system_instruction=get_players_seen_system_prompt,
                                   generation_config=get_players_seen_config)
 
-    response = model.generate_content(["Analyze the following video:", video_file])
+    response = model.generate_content(["Analyze the following video:", title])
     players_data = json.loads(response.text)['players']
+
     print(players_data)
 
     model = genai.GenerativeModel(model_name="models/gemini-1.5-flash",
@@ -732,7 +732,8 @@ def get_players():
 def get_teams_():
     video_url=request.args.get('videoUrl', '').strip("'").strip('"')
     season = request.args.get('season', '').strip("'").strip('"')
-    return jsonify(get_teams(video_url,season))
+    title = request.args.get('title', '').strip("'").strip('"')
+    return jsonify(get_teams(video_url,season, title))
 
 @app.route('/getPlayExplanation', methods=["GET"])
 def get_play():

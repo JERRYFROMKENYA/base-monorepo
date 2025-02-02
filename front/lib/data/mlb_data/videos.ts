@@ -26,8 +26,8 @@ export async function getHomeRunVideos(page, perPage, season = 2024) {
   return await fetchWithRetry(url);
 }
 
-export async function getTeamPlayers(url, year) {
-  const requestUrl = `${VIDEOS_URL_1}/getTeams?videoUrl=${url}&season=${year}`;
+export async function getTeamPlayers(url, year,title) {
+  const requestUrl = `${VIDEOS_URL_1}/getTeams?videoUrl=${url}&season=${year}&title=${title}`;
   return await fetchWithRetry(requestUrl);
 }
 

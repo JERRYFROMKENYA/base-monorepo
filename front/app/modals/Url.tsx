@@ -1,19 +1,12 @@
 import React, { memo, useEffect, useState } from 'react'
 import { ScrollView, StyleSheet } from 'react-native';
-import { Surface, Text, Divider, Appbar } from 'react-native-paper';
-import { useLocalSearchParams } from 'expo-router';
+import { Surface, Text, Divider, Appbar, Avatar } from 'react-native-paper'
 import { Locales } from '@/lib';
-import {
-  getBatSpeed,
-  getHomeRunByPlayId,
-  getPlayExplanation,
-  getSummary,
-  getTranslation,
-} from '@/lib/data/mlb_data/videos';
 import { View } from '@/lib/presentation/Themed';
-import * as Localization from 'expo-localization';
+import { SvgUri } from 'react-native-svg'
+import { getPlayerHeadShotUrl } from '@/lib/data/mlb_data/players'
 
-const Url = ({ onClose, hrData, stats }: { onClose: any, hrData: any, stats: any }) => {
+const Url = ({ onClose, hrData, stats, teamData }: { onClose: any, hrData: any, stats: any, teamData:any }) => {
   const [moreDescription, setMoreDescription] = useState<boolean>(false);
   const [moreExplanation, setMoreExplanation] = useState<boolean>(false);
   const [explanation, setExplanation] = useState<string>(stats.explanation.length > 200 ? stats.explanation.substring(0, 200) : stats.explanation);
@@ -22,7 +15,8 @@ const Url = ({ onClose, hrData, stats }: { onClose: any, hrData: any, stats: any
   useEffect(() => {
     setExplanation(!moreExplanation ? stats.explanation.substring(0, 200) : stats.explanation)
     setDescription(!moreDescription ? stats.description.substring(0, 200) : stats.description)
-  }, [moreExplanation, moreDescription]);
+    console.log(teamData)
+  }, [moreExplanation, moreDescription, stats, teamData]);
 
 
   return (
@@ -38,6 +32,8 @@ const Url = ({ onClose, hrData, stats }: { onClose: any, hrData: any, stats: any
           </Surface>
         )}
 
+
+
         {stats.description && (
           <Surface style={styles.textCard}>
             <Text variant={'titleSmall'} style={{ fontWeight: 'bold', marginBottom:5 }}>Description</Text>
@@ -47,6 +43,7 @@ const Url = ({ onClose, hrData, stats }: { onClose: any, hrData: any, stats: any
           </Surface>
         )}
 
+
         {stats.explanation && (
           <Surface style={styles.textCard}>
             <Text variant={'titleSmall'} style={{ fontWeight: 'bold', marginBottom:5 }}>✨Play Explanation</Text>
@@ -55,6 +52,46 @@ const Url = ({ onClose, hrData, stats }: { onClose: any, hrData: any, stats: any
                    style={{ fontWeight: 'bold' }}>{!moreExplanation?'...more':'...less'}</Text>}
           </Surface>
         )}
+
+        {
+          teamData && (
+            <Surface elevation={0} style={{...styles.textCard}}>
+              <Text variant={'titleSmall'} style={{ fontWeight: 'bold', marginBottom:5 }}>Teams</Text>
+              <ScrollView horizontal>
+                {teamData.map((team: any, index: number) => (
+                  <Surface key={index} style={{ ...styles.textCard, margin:5,
+                    justifyContent:"center", alignContent:"center"}}>
+                    <Avatar.Image style={{backgroundColor:"none"}} source={() => <SvgUri uri={team.logo} />}/>
+                    <Text variant={'bodyMedium'}>{team.name}</Text>
+                    <Text variant={'bodySmall'}>{team.abbreviation}</Text>
+                  </Surface>
+                ))}
+              </ScrollView>
+            </Surface>
+          )
+        }{
+  teamData && (
+    <Surface elevation={0} style={{...styles.textCard}}>
+      <ScrollView horizontal>
+        {teamData.map((team: any, index: number) => (
+          team.players.map((player: any, playerIndex: number) => {
+            return(
+              <Surface key={playerIndex}
+                       style={{ ...styles.textCard, margin: 5, justifyContent: 'center', alignContent: 'center' }}>
+                <Avatar.Image style={{ backgroundColor: 'none' }} source={{uri: getPlayerHeadShotUrl(player.id)}} />
+                <Text variant={'bodyMedium'}>{player.name}</Text>
+                <Text variant={'bodySmall'}>{team.abbreviation}</Text>
+              </Surface>
+            )
+          })
+        ))}
+      </ScrollView>
+    </Surface>
+  )
+}
+
+
+
         <Text variant={'titleSmall'} style={{ fontWeight: 'bold', marginVertical:7, marginLeft:20 }}>✨Play Statistics</Text>
         <View style={styles.view}>
           {[
