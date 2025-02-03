@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useRef, memo } from 'react';
 import { Dimensions, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { View } from '@/lib/presentation/Themed';
 import { Text, Chip, Icon } from 'react-native-paper';
-import { useRouter, useSegments } from 'expo-router'
+import { useRouter, useSegments } from 'expo-router';
 import { Locales } from '@/lib';
 import { useEvent } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
@@ -12,42 +12,72 @@ import {
   getPlayExplanation,
   getSummary,
   getTeamPlayers, getTranslation,
-} from '@/lib/data/mlb_data/videos'
+} from '@/lib/data/mlb_data/videos';
 import Url from '@/app/modals/Url';
-import * as Localization from 'expo-localization'
+import * as Localization from 'expo-localization';
+import {
+  bookmarkHomeRunVideo,
+  getIsBookmark,
+  getIsLiked,
+  likeHomeRunVideo,
+  unbookmarkHomeRunVideo,
+  unlikeHomeRunVideo,
+} from '@/lib/data/pocketbase/video'
+import { useAuth } from '@/lib/data/pocketbase/auth';
+import { usePocketBase } from '@/lib/data/pocketbase';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const DOUBLE_PRESS_DELAY = 500;
 
-const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) => {
-  // const router = useRouter();
+const VideoPlayer = ({ item, index, isViewable }: any) => {
   const segments = useSegments();
   const inPlayableZone = segments[1] === 'for_you';
-  const [liked, setLiked] = useState(isLiked);
+  const [liked, setLiked] = useState(false);
   const [teamData, setTeamData] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const { user } = useAuth();
+  const { pb } = usePocketBase();
 
   const player = useVideoPlayer(item.video, (player) => {
     player.loop = true;
     if (isViewable) player.play();
-    // player.bufferOptions = { preferredForwardBufferDuration: 1 };
   });
 
   const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
 
   useEffect(() => {
     isViewable ? player.play() : player.pause();
-
     if (!inPlayableZone) player.pause();
   }, [isViewable, segments]);
+  useEffect(() => {
+    getIsBookmark(item.play_id, user, pb).then((isBookmarked) => isBookmarked);
+    getIsLiked(item.play_id, user, pb).then((isLiked) => setLiked(isLiked));
+  }, [isViewable]);
+  const toggleLike = useCallback(() => {
+    setLiked((prevLiked) => !prevLiked);
+    if (!liked) {
+      likeHomeRunVideo(user, pb, item.play_id).catch(() => setLiked(false));
+    } else {
+      unlikeHomeRunVideo(user, pb, item.play_id).catch(() => setLiked(true));
+    }
+  }, [liked, user, pb, item.play_id]);
 
-  const toggleLike = useCallback(() => setLiked((prev) => !prev), []);
+  const toggleBookmark = useCallback(() => {
+    setIsBookmarked((prevBookmarked) => !prevBookmarked);
+    if (!isBookmarked) {
+      bookmarkHomeRunVideo(user, pb, item.play_id).catch(() => setIsBookmarked(false));
+    } else {
+      unbookmarkHomeRunVideo(user, pb, item.play_id).catch(() => setIsBookmarked(true));
+    }
+  }, [isBookmarked, user, pb, item.play_id]);
 
   const togglePlayPause = useCallback(() => {
     isPlaying ? player.pause() : player.play();
   }, [isPlaying, player]);
+
   let timer: NodeJS.Timeout | null = null;
   const TIMEOUT = 500;
   const debounce = (onSingle: () => void, onDouble: () => void) => {
@@ -67,8 +97,6 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
     debounce(togglePlayPause, toggleLike);
   };
 
-
-  //data fetching
   const [hrData, setHrData] = useState<any>(null);
   const [stats, setStats] = useState({
     title: 'Loading...',
@@ -81,9 +109,9 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
     hitDistance: '',
   });
   const languageCode = Localization.getLocales()[0].languageCode ?? 'en';
+
   useEffect(() => {
-    // if (!url) return console.error('URL parameter is missing.');
-    if (!inPlayableZone) return
+    if (!inPlayableZone) return;
     const fetchData = async () => {
       try {
         const [hr_data] = await getHomeRunByPlayId(item.play_id);
@@ -91,23 +119,10 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
 
         setHrData(hr_data);
 
-        // const [bat_data, summary, explanationData] = await Promise.all([
-        //   getBatSpeed(hr_data.video),
-        //   getSummary(hr_data.video),
-        //   getPlayExplanation(hr_data.video),
-        // ]);
-        const allData= await getDetails(hr_data.video);
-        console.log(allData);
-        const bat_data= allData.bat_speed;
-        const summary= allData.summary;
-        const explanationData= allData.explanation;
-
-
-
-
-        // const bat_data = await getBatSpeed(hr_data.video);
-        // const summary = await getSummary(hr_data.video);
-        // const explanationData = await getPlayExplanation(hr_data.video);
+        const allData = await getDetails(hr_data.video);
+        const bat_data = allData.bat_speed;
+        const summary = allData.summary;
+        const explanationData = allData.explanation;
 
         let newStats = {
           title: hr_data.title || 'No Title Available',
@@ -156,18 +171,20 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
     }
   };
 
+
+
   return (
     <View>
       <TouchableOpacity
         style={styles.touchableContainer}
         onPress={handleOnPress}
       >
-        <VideoView  style={styles.video} player={player} contentFit="cover" nativeControls={false} />
+        <VideoView style={styles.video} player={player} contentFit="cover" nativeControls={false} />
       </TouchableOpacity>
 
       {item.title && (
         <View style={styles.videoOverlay}>
-          <Text variant="bodyLarge">{item.title}</Text>
+          <Text variant="bodyLarge" style={{ color: "white" }}>{item.title}</Text>
           <View style={styles.chipContainer}>
             <Chip icon="baseball-bat" style={styles.chip}>
               {`${Locales.t('exitVelocity')}: ${item.ExitVelocity} mph`}
@@ -187,13 +204,18 @@ const VideoPlayer = ({ item, index, isViewable, isLiked, isBookmarked }: any) =>
 
       <View style={styles.iconContainer}>
         <TouchableOpacity style={styles.icon} onPress={toggleLike}>
-          <Icon source="heart" size={50} color={liked ? '#e86d6d' : undefined} />
+          {liked ? <Icon source="heart" size={50} color={"white"} /> :
+            <Icon size={50} source={'heart-outline'} color={"white"} />}
+          <Text style={{ color: "white" }}>{liked?"Liked":"Like"}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.icon} onPress={() => {}}>
-          <Icon source="bookmark" size={50} color={isBookmarked ? '#e4c92a' : undefined} />
+        <TouchableOpacity style={styles.icon} onPress={toggleBookmark}>
+          {isBookmarked ? <Icon source="bookmark" size={50} color={"white"} /> :
+            <Icon source="bookmark-outline" size={50} color={"white"} />}
+          <Text style={{ color: "white" }}>{isBookmarked?"Bookmarked":"Bookmark"}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.icon} onPress={() => setModalVisible(true)}>
-          <Icon source="baseball" size={50} />
+          <Icon source="baseball" size={50} color={"white"} />
+          <Text style={{ color: "white" }}>Analyze</Text>
         </TouchableOpacity>
       </View>
 
@@ -227,7 +249,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     padding: 5,
     borderRadius: 15,
-    backgroundColor:"none"
+    backgroundColor: "none"
   },
   chipContainer: {
     flexDirection: 'row',
@@ -235,7 +257,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     alignSelf: 'flex-end',
     paddingHorizontal: 10,
-    backgroundColor:"none"
+    backgroundColor: "none"
   },
   chip: {
     margin: 3,
@@ -246,10 +268,15 @@ const styles = StyleSheet.create({
     right: 0,
     margin: 5,
     justifyContent: 'space-around',
-    backgroundColor:"none"
+    backgroundColor: "none"
   },
   icon: {
     marginBottom: 15,
+    alignContent: "center",
+    justifyContent: "center",
+    flexDirection: "column",
+    alignItems: "center",
+    alignSelf: 'center'
   },
 });
 

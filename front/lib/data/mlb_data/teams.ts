@@ -54,13 +54,13 @@ export async function getAllTeams() {
 }
 
 export function getTeamById(Id: string) {
-  return fetch(`${DATA_URL_1}/teams?teamId=${Id}`)
+  return fetch(`${DATA_URL_1}/team?teamId=${Id}`)
     .then(response => response.text())
     .then(text => {
       console.log('Raw response:', text);
       const sanitizedText = text.replace(/NaN/g, 'null');
       const team: Team = JSON.parse(sanitizedText);
-      return team;
+      return team[0];
     })
     .catch(error => {
       console.error(`Error fetching team by Id ${Id}:`, error);

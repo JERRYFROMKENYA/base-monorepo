@@ -29,18 +29,18 @@ const DrawerContent = (props: DrawerContentProps) => (
       active={props.navProps.state.index === 3}
       onPress={() => router.push('/drawer/games')}
     />
-    <Drawer.Item
-      label={Locales.t('statistics')}
-      icon="chart-line"
-      active={props.navProps.state.index === 4}
-      onPress={() => router.push('/drawer/statistics')}
-    />
-    <Drawer.Item
-      label={Locales.t('predictions')}
-      icon="baseball-bat"
-      active={props.navProps.state.index === 5}
-      onPress={() => router.push('/drawer/predictions')}
-    />
+    {/*<Drawer.Item*/}
+    {/*  label={Locales.t('statistics')}*/}
+    {/*  icon="chart-line"*/}
+    {/*  active={props.navProps.state.index === 4}*/}
+    {/*  onPress={() => router.push('/drawer/statistics')}*/}
+    {/*/>*/}
+    {/*<Drawer.Item*/}
+    {/*  label={Locales.t('predictions')}*/}
+    {/*  icon="baseball-bat"*/}
+    {/*  active={props.navProps.state.index === 5}*/}
+    {/*  onPress={() => router.push('/drawer/predictions')}*/}
+    {/*/>*/}
 
     <Drawer.Item
       label={Locales.t('profile')}

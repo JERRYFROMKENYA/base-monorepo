@@ -37,7 +37,7 @@ const Url = ({ onClose, hrData, stats, teamData }: { onClose: any, hrData: any, 
           <Surface style={styles.textCard}>
             <Text variant={'titleSmall'} style={{ fontWeight: 'bold', marginBottom:5 }}>Description</Text>
             <Text variant={'bodyMedium'}>{description}</Text>
-            {<Text onPress={()=>{setMoreDescription(!moreDescription)}} variant={'bodyMedium'}
+            {stats.description.length>200&&<Text onPress={()=>{setMoreDescription(!moreDescription)}} variant={'bodyMedium'}
                    style={{ fontWeight: 'bold' }}>{!moreDescription?'...more':'...less'}</Text>}
           </Surface>
         )}
@@ -47,7 +47,7 @@ const Url = ({ onClose, hrData, stats, teamData }: { onClose: any, hrData: any, 
           <Surface style={styles.textCard}>
             <Text variant={'titleSmall'} style={{ fontWeight: 'bold', marginBottom:5 }}>✨Play Explanation</Text>
             <Text variant={'bodyMedium'}>{explanation}</Text>
-            {<Text onPress={()=>{setMoreExplanation(!moreExplanation)}} variant={'bodyMedium'}
+            {stats.explanation.length>200&&<Text onPress={()=>{setMoreExplanation(!moreExplanation)}} variant={'bodyMedium'}
                    style={{ fontWeight: 'bold' }}>{!moreExplanation?'...more':'...less'}</Text>}
           </Surface>
         )}

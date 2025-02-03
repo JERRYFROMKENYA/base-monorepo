@@ -97,3 +97,84 @@ export async function handlePageUpdate(page:number,user:any,pb:any){
     }
   })
 }
+
+
+export async function getIsLiked(play_id:string,user:any,pb:any){
+  try{
+    const record = await pb.collection('liked_home_runs').getFirstListItem(`user="${user.id}"&&play_id="${play_id}"`);
+    return !!record
+  }catch (e) {
+    console.log(e)
+    return false
+  }
+}
+
+export async function likeHomeRunVideo(user:any,pb:any,play_id:string){
+  try{
+    const data = {
+      'play_id': play_id,
+      'user': user.id,
+    }
+    const record = await pb.collection('liked_home_runs').create(data)
+    return !!record
+  }catch (e) {
+    console.log(e)
+    return false
+  }
+}
+
+
+export async  function unlikeHomeRunVideo(user:any,pb:any,play_id:string){
+  try{
+    const record = await pb.collection('liked_home_runs').getFirstListItem(`user="${user.id}"&&play_id="${play_id}"`);
+    if (record){
+      await pb.collection('liked_home_runs').delete(record.id)
+      return true
+    }
+    return false
+  }catch (e) {
+    console.log(e)
+    return false
+  }
+}
+
+
+
+export async function getIsBookmark(play_id:string,user:any,pb:any){
+  try{
+    const record = await pb.collection('bookmark').getFirstListItem(`user="${user.id}"&&play_id="${play_id}"`);
+    return !!record
+  }catch (e) {
+    console.log(e)
+    return false
+  }
+}
+
+export async function bookmarkHomeRunVideo(user:any,pb:any,play_id:string){
+  try{
+    const data = {
+      'play_id': play_id,
+      'user': user.id,
+    }
+    const record = await pb.collection('bookmark').create(data)
+    return !!record
+  }catch (e) {
+    console.log(e)
+    return false
+  }
+}
+
+export async  function unbookmarkHomeRunVideo(user:any,pb:any,play_id:string){
+  try{
+    const record = await pb.collection('bookmark').getFirstListItem(`user="${user.id}"&&play_id="${play_id}"`);
+    if (record){
+      await pb.collection('bookmark').delete(record.id)
+      return true
+    }
+    return false
+  }catch (e) {
+    console.log(e)
+    return false
+  }
+}
+

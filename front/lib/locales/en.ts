@@ -4,6 +4,7 @@
 
 const English = {
   more_info: 'More Info',
+  upcoming:'Upcoming',
   exitVelocity:"Exit Velocity",
   launchAngle:"Launch Angle",
   batSpeed:"Bat Speed",

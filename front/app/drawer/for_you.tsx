@@ -15,7 +15,7 @@ const ForYou = () => {
   const { user } = useAuth();
   const { pb } = usePocketBase();
 
-  const ITEMS_PER_PAGE = 21;
+  const ITEMS_PER_PAGE = 11;
 
   const fetchVideos = async (page: number) => {
     if (loading) return; // Prevent duplicate fetches
@@ -74,7 +74,7 @@ useEffect(() => {
         data={videos}
         keyExtractor={(item) => `${item.id}-${item.play_id}`}
         renderItem={({ item }) => (
-          <VideoPlayer item={item} index={item.id} isViewable={activeIndex === item.play_id} isLiked isBookmarked />
+          <VideoPlayer item={item} index={item.id} isViewable={activeIndex === item.play_id}   />
         )}
         snapToAlignment="end"
         snapToInterval={Dimensions.get('window').height}

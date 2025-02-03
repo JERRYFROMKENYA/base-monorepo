@@ -11,6 +11,8 @@ from app.util.utilities import process_endpoint_url, load_newline_delimited_json
 def get_players():
     season_year = request.args.get('season', '2025')
     key = request.args.get('q', '').strip('"').strip("'")
+    teamId = request.args.get('teamId', '')
+    playerId = request.args.get('playerId', '')
     players_endpoint_url = f'https://statsapi.mlb.com/api/v1/sports/1/players' + (
         f'?season={season_year}' if season_year else '')
     players = process_endpoint_url(players_endpoint_url, 'people')
@@ -19,9 +21,16 @@ def get_players():
         player['link'] = f"https://statsapi.mlb.com{player['link']}"
         player['currentTeam_link'] = f"https://statsapi.mlb.com{player['currentTeam_link']}"
     if key:
-        filtered_players = [player for player in players if
+        players = [player for player in players if
                             any(key.lower() in str(value).lower() for value in player.values())]
-        return jsonify(filtered_players)
+
+    if teamId:
+        players = [player for player in players if player['currentTeam_id'] == int(teamId)]
+    if playerId:
+            players = [player for player in players if player['id'] == int(playerId)]
+
+
+
     return jsonify(players)
 
 @app.route('/player_headshot', methods=['GET'])

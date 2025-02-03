@@ -86,7 +86,9 @@ const DrawerLayout = () => {
           options={{
             drawerLabel: Locales.t('home_runs'),
             title: Locales.t('home_runs'),
-           // headerShown:false,
+           headerStyle:{backgroundColor:"rgba(255,255,255,0.11)"},
+            headerTintColor: "rgba(255,255,255,0.32)",
+            // headerTransparent:true,
             headerRight: () => (
               <>
                 <Tooltip title={Locales.t('search')}>
