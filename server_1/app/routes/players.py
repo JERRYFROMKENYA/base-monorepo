@@ -33,28 +33,7 @@ def get_player_headshot():
         "player_headshot":player_headshot
     })
 
-@app.route('/game', methods=['GET'])
-def get_game():
-    # gamePk
-    game_id = request.args.get('gameId', '')
-    game_endpoint_url = f'https://statsapi.mlb.com/api/v1.1/game/{game_id}/feed/live'
-    game = json.loads(requests.get(game_endpoint_url).content)
-    current_play=request.args.get('currentPlay', '')
-    # Extract single play information
 
-    if not current_play:
-        return jsonify(game)
-
-    single_game_play = game['liveData']['plays'].get('currentPlay')
-    if single_game_play is None:
-        # If 'currentPlay' is not found, try accessing the last play in 'allPlays'
-        all_plays = game['liveData']['plays'].get('allPlays')
-        if all_plays:
-            single_game_play = all_plays[-1]  # Get the last play
-        else:
-            single_game_play = {}  # Set to empty dictionary if no plays are found
-            print("No plays found for this game.")
-    return jsonify(single_game_play)
 
 @app.route('/play_video', methods=['GET'])
 def get_play_video():

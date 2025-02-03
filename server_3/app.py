@@ -5,6 +5,8 @@ import typing
 from flask import Flask, request, jsonify
 import os
 import pandas as pd
+from google.oauth2 import service_account
+from google.auth.transport.requests import Request
 import chromadb
 import google.generativeai as genai
 from chromadb import Documents, EmbeddingFunction, Embeddings
@@ -757,6 +759,46 @@ def get_bat_speed_():
 def summary():
     video_url=request.args.get('videoUrl', '').strip("'").strip('"')
     return jsonify(get_video_summary(video_url))
+
+@app.route('/genImage', methods=["GET"])
+def gen_image():
+    # Load service account credentials
+    credentials = service_account.Credentials.from_service_account_file("service-account-key.json")
+
+
+
+    credentials.refresh(Request())  # Refresh to get a valid access token
+    access_token = "ya29.a0AXeO80QdUE4B7kSf_XC3R6Q54I2bsd3I9ofQ0xu4ALnYA-6ZjFeHLtgFX1U3JHKmU1R45HTI5roA2Vq0BvK9JP2YUBHuQ8jIskZNZXbDLNx4iGf2K5iRTyoz-vGe46MfpaM91VcbaNCZRJCLHF5sr6eMKCDE9bdpqVmLAjcpc6YxQLwjaCgYKAZUSARISFQHGX2Mi9qdYfaEcl1_w6i93P2_GSw0183"
+
+    # Define the request URL
+    project_id = "base-app-it"
+    url = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{project_id}/locations/us-central1/publishers/google/models/imagen-3.0-generate-002:predict"
+
+    # Load the request payload
+    payload = {
+        "instances": [
+            {
+                "prompt": "generate a baseball cartoon looking thing"
+            }
+        ],
+        "parameters": {
+            "sampleCount": 1
+        }
+    }
+
+    # Set headers
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json; charset=utf-8"
+    }
+
+    # Make the POST request
+    response = requests.post(url, headers=headers, json=payload)
+
+    # Print the response
+    print(response.status_code)
+    print (response.json())
+    return response.json()
 
 
 @app.route('/clean-up', methods=["GET"])

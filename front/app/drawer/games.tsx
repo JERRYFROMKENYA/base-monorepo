@@ -14,7 +14,7 @@ const players = {
   centerField: 'David Miller',
   rightField: 'Emily Wilson',
 }
-const News = () => (
+const Games = () => (
   <Surface style={styles.screen}>
     {/*<ScreenInfo*/}
     {/*    title={Locales.t('titleHome')}*/}
@@ -23,4 +23,4 @@ const News = () => (
   </Surface>
 )
 
-export default News
+export default Games

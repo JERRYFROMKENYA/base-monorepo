@@ -24,10 +24,10 @@ const DrawerContent = (props: DrawerContentProps) => (
         onPress={() => router.push('/drawer/for_you')}
       />
     <Drawer.Item
-      label={Locales.t('news')}
-      icon="newspaper"
+      label={Locales.t('games')}
+      icon="baseball-bat"
       active={props.navProps.state.index === 3}
-      onPress={() => router.push('/drawer/news')}
+      onPress={() => router.push('/drawer/games')}
     />
     <Drawer.Item
       label={Locales.t('statistics')}

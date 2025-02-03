@@ -19,7 +19,7 @@ const English = {
   for_you: 'For you',
   fantasy: 'Fantasy',
   statistics: 'Statistics',
-  news: 'News',
+  games: 'Games',
   predictions: 'Predictions',
   mlb:"MLB",
   home_runs:"Home Runs",

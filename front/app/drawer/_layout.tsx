@@ -106,6 +106,21 @@ const DrawerLayout = () => {
           }}
         />
         <Drawer.Screen
+          name="games"
+          options={{
+            drawerLabel: Locales.t('games'),
+            title: Locales.t('games'),
+            headerRight: () => (
+              <Tooltip title={Locales.t('stackNav')}>
+                <Appbar.Action
+                  icon="card-multiple-outline"
+                  onPress={() => router.push('/modal')}
+                />
+              </Tooltip>
+            ),
+          }}
+        />
+        <Drawer.Screen
           name="profile"
           options={{
             drawerLabel: Locales.t('profile'),
@@ -195,21 +210,7 @@ const DrawerLayout = () => {
             ),
           }}
         />
-        <Drawer.Screen
-          name="news"
-          options={{
-            drawerLabel: Locales.t('news'),
-            title: Locales.t('news'),
-            headerRight: () => (
-              <Tooltip title={Locales.t('stackNav')}>
-                <Appbar.Action
-                  icon="card-multiple-outline"
-                  onPress={() => router.push('/modal')}
-                />
-              </Tooltip>
-            ),
-          }}
-        />
+
       </Drawer>
     </GestureHandlerRootView>
   )
