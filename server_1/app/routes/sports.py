@@ -13,8 +13,10 @@ def get_sports():
 @app.route('/leagues', methods=['GET'])
 def get_leagues():
     sport_id = request.args.get('sportId', '')
+    league_id = request.args.get('leagueId', '')
     leagues_endpoint_url = f'https://statsapi.mlb.com/api/v1/league' + (f'?sportId={sport_id}' if sport_id else '')  # Can add '?sportId=1' for MLB leagues
     leagues = process_endpoint_url(leagues_endpoint_url, 'leagues')
+    leagues = leagues[leagues['id'] == int(league_id)] if league_id else leagues
     return jsonify(leagues.to_dict(orient='records'))
 
 
