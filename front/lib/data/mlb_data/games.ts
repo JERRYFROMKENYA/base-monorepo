@@ -8,3 +8,11 @@ export async function fetchGameContent(id: any)
       return await fetchWithRetry(url);
 
 }
+
+export async function fetchGameSummary(id: any)
+{
+    const url =`${DATA_URL_1}/summarize-game?gameId=${id}`
+      console.log(response.summary)
+      return await fetchWithRetry(url);
+
+}

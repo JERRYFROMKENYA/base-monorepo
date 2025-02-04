@@ -241,3 +241,38 @@ summary: str(contains English text),
 
 
 
+@app.route('/explain-game', methods=['GET'])
+def explain_game():
+    game_id = request.args.get('gameId', '')
+    lang = request.args.get('lang', '').strip("'").strip('"')
+
+    game_content_url = f"https://statsapi.mlb.com/api/v1.1/game/{game_id}/feed/live"
+    game_content = process_endpoint_url(game_content_url, "liveData")
+    print(game_content.to_csv())
+
+
+    model = genai.GenerativeModel(model_name="models/gemini-1.5-pro",
+                                  system_instruction= """
+You are a baseball analysis system that only returns user-friendly 
+information about baseball games, that are provided.
+Your job is to breakdown the play and/or video and tell the user what happened in the game.
+Explain each play of the game in detail.
+
+Return:{
+summary: str(contains English text),
+}
+""",
+                                  generation_config=summary_config)
+
+    response = model.generate_content(["In a few paragraphs, summarize the game, per inning.Cite Scores",
+                                       game_content.to_csv()])
+    result_text = json.loads(response.text)
+    print(response.text)
+
+
+
+
+    return jsonify(result_text)
+
+
+
