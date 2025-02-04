@@ -21,7 +21,7 @@ export async function getPlayerById(Id: string) {
     // console.log('Raw response:', text);
     const sanitizedText = text.replace(/NaN/g, 'null');
     const data = JSON.parse(sanitizedText);
-    return data;
+    return data[0];
   } catch (error) {
     console.error(`Error fetching player by Id ${Id}:`, error);
     throw error;
@@ -93,6 +93,10 @@ export async function getPlayersByTeamIds(Id: string[]) {
 }
 
 
+
+
+
 export function getPlayerHeadShotUrl(playerId: string) {
   return `https://securea.mlb.com/mlb/images/players/head_shot/${playerId}.jpg`;
 }
+

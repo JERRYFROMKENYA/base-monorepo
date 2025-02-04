@@ -101,12 +101,13 @@ export async function searchTeams(search: string) {
   }
 }
 
-export async function getScheduleByTeamId(Id: string,season:string) {
+export async function getScheduleByTeamId(Id: string,season:string, startDate:string, endDate:string, page:number, per_page:number) {
   try {
     if (!season) {
       season = new Date().getFullYear().toString();
     }
-    const response = await fetch(`${DATA_URL_1}/schedule?teamId=${Id}&season=${season}`);
+    const response = await fetch(`${DATA_URL_1}/schedule?teamId=${Id}&season=${season}&per_page=${per_page}&page=${page}&startDate=${startDate}&endDate=${endDate}`);
+    console.log("URL: ",`${DATA_URL_1}/schedule?teamId=${Id}&season=${season}&per_page=${per_page}&page=${page}&startDate=${startDate}&endDate=${endDate}`)
     const text = await response.text();
     // console.log('Raw response:', text);
     const sanitizedText = text.replace(/NaN/g, 'null');

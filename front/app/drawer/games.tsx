@@ -1,17 +1,18 @@
-import React, { Dispatch, SetStateAction, useEffect } from 'react';
-import { Avatar, Chip, Surface, Text } from 'react-native-paper'
-import { ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react'
+import { Avatar, Chip, Surface, Text, ActivityIndicator } from 'react-native-paper';
+import { FlatList, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
 import { useRouter } from 'expo-router';
 import { SvgUri } from 'react-native-svg';
 import { Locales } from '@/lib';
 import { getInterestedTeams } from '@/lib/data/pocketbase/teams';
 import { usePocketBase } from '@/lib/data/pocketbase';
 import { useAuth } from '@/lib/data/pocketbase/auth';
-import { getScheduleByTeamId, getTeamById, getTeamLogo } from '@/lib/data/mlb_data/teams'
-import { getInterestedPlayers } from '@/lib/data/pocketbase/players'
-import { getPlayerById, getPlayerHeadShotUrl } from '@/lib/data/mlb_data/players'
-import { getLeagueById } from '@/lib/data/mlb_data/leagues'
-import { getInterestedLeagues } from '@/lib/data/pocketbase/leagues'
+import { getScheduleByTeamId, getTeamById, getTeamLogo } from '@/lib/data/mlb_data/teams';
+import { getInterestedPlayers } from '@/lib/data/pocketbase/players';
+import { getPlayerById, getPlayerHeadShotUrl } from '@/lib/data/mlb_data/players';
+import { getLeagueById } from '@/lib/data/mlb_data/leagues';
+import { getInterestedLeagues } from '@/lib/data/pocketbase/leagues';
+import Game from '@/app/modals/Game'
 
 interface Category {
   label: string;
@@ -34,8 +35,20 @@ const Games = () => {
   const [selectedTeam, setSelectedTeam] = React.useState(-1);
   const [selectedLeague, setSelectedLeague] = React.useState(-1);
   const [selectedPlayer, setSelectedPlayer] = React.useState(-1);
-
   const [scheduleData, setScheduleData] = React.useState<any[]>([]);
+  const [selectedDate, setSelectedDate] = React.useState(new Date().toISOString().slice(0, 10));
+  const [endDate, setEndDate] = React.useState(() => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() + 1);
+    return date.toISOString().slice(0, 10);
+  });
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [season, setSeason] = React.useState(2025);
+
+  const [item, setItem]= useState()
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const pageSize = 30;
 
   const { pb } = usePocketBase();
   const { user } = useAuth();
@@ -45,16 +58,15 @@ const Games = () => {
     { label: 'all' },
     { label: 'upcoming', icon: 'calendar' },
     { label: 'highlights', icon: 'clock' },
-
   ];
 
   useEffect(() => {
     const fetchTeams = async () => {
       const teams = await getInterestedTeams(pb, user);
       const interestedTeams = await Promise.all(
-        teams.map(async (team) => {
+        teams.map(async (team: any) => {
           const teamData = await getTeamById(team.teamId);
-          return teamData
+          return teamData;
         })
       );
       setMyTeams(interestedTeams);
@@ -62,35 +74,33 @@ const Games = () => {
     const fetchLeagues = async () => {
       const leagues = await getInterestedLeagues(pb, user);
       const interestedLeagues = await Promise.all(
-        leagues.map(async (league) => {
+        leagues.map(async (league: any) => {
           const leagueData = await getLeagueById(league.leagueId);
-          return leagueData
+          return leagueData;
         })
       );
       setMyLeagues(interestedLeagues);
-    }
+    };
     const fetchPlayers = async () => {
       const players = await getInterestedPlayers(pb, user);
       const interestedPlayers = await Promise.all(
-        players.map(async (player) => {
+        players.map(async (player: any) => {
           const playerData = await getPlayerById(player.playerId);
-          return playerData
+          const teamData = await getTeamById(playerData.currentTeam_id);
+          setMyTeams((prev) => [...prev.filter((f) => teamData.id !== f.id), teamData]);
+          return playerData;
         })
       );
       setMyPlayers(interestedPlayers);
-    }
+    };
 
-
-
-      fetchTeams()
-      fetchLeagues()
-      fetchPlayers()
-
+    fetchTeams();
+    fetchLeagues();
+    fetchPlayers();
   }, [router]);
 
   useEffect(() => {
     const fetchGames = async () => {
-      // Fetch games based on filters
       setLoading(false);
     };
     fetchGames();
@@ -109,6 +119,9 @@ const Games = () => {
 
   const handleAddFilterTeams = (filter: string) => {
     setFilterTeams((prev) => [...prev.filter((f) => f !== 'all'), filter]);
+    setScheduleData((prev) => prev.filter((team) =>
+      team.games[0].teams.home.team.id === filter || team.games[0].teams.away.team.id === filter
+    ));
   };
 
   const handleRemoveFilterTeams = (filter: string) => {
@@ -116,49 +129,68 @@ const Games = () => {
     if (filter === 'all') {
       setFilterTeams(['all']);
     }
+    getScheduleData();
   };
 
+  const getScheduleData = async () => {
+    let teams = new Set<number>();
+    for (let team of myTeams) {
+      teams.add(team.id);
+    }
+    for (let player of myPlayers) {
+      teams.add(player.currentTeam_id);
+    }
 
-const getScheduleData = async () => {
-  let teams = new Set<number>();
-  for (let team of myTeams) {
-    teams.add(team.id);
-  }
-  for (let player of myPlayers) {
-    teams.add(player.currentTeam_id);
-  }
-  console.log(teams);
-  let dataS: any[] = [];
-  for (let id of teams.values()) {
-    getScheduleByTeamId(id, 2025).then((d: any[]) => {
-      dataS.push(...d);
-      setScheduleData((p)=> [...p, ...d.filter(()=>!p.includes(d))]);
-    });
-  }
-  console.log("w", scheduleData);
-};
+    // Apply team filter
+    if (selectedTeam !== -1) {
+      teams = new Set([myTeams[selectedTeam].id]);
+    }
 
-useEffect(() => {
-  getScheduleData();
-}, [myTeams, myPlayers]);
+    let dataS: any[] = [];
+    for (let id of teams.values()) {
+      let games;
+      if (selectedCategory === 1) { // upcoming
+        games = await getScheduleByTeamId(id.toString(), season.toString(), selectedDate, endDate, currentPage, pageSize);
+      } else if (selectedCategory === 2) { // highlights (old games)
+        const pastDate = new Date();
+        pastDate.setFullYear(pastDate.getFullYear() - 1);
+        games = await getScheduleByTeamId(id.toString(), season.toString(), pastDate.toISOString().slice(0, 10), selectedDate, currentPage, pageSize);
+      } else { // all (mix)
+        const upcomingGames = await getScheduleByTeamId(id.toString(), season.toString(), selectedDate, endDate, currentPage, pageSize / 2);
+        const pastDate = new Date();
+        pastDate.setFullYear(pastDate.getFullYear() - 1);
+        const oldGames = await getScheduleByTeamId(id.toString(), season.toString(), pastDate.toISOString().slice(0, 10), selectedDate, currentPage, pageSize / 2);
+        games = [...upcomingGames, ...oldGames];
+      }
+      dataS.push(...games);
+    }
 
+    // Apply league filter
+    if (selectedLeague !== -1) {
+      dataS = dataS.filter(game => game.league_id === myLeagues[selectedLeague].id);
+    }
+
+    setScheduleData(dataS);
+  };
+
+  const handleAddFilterCategory = (filter: string) => {
+    setFilter((prev) => [...prev.filter((f) => f !== 'all'), filter]);
+    setSelectedCategory(categories.findIndex((category) => category.label === filter));
+    getScheduleData();
+  };
+
+  useEffect(() => {
+    getScheduleData();
+  }, [myTeams, myPlayers, selectedCategory, currentPage]);
+
+  const loadMore = () => {
+    setCurrentPage((prev) => prev + 1);
+  }
 
   const GameCategories = ({ categories }: CategoryProps) => {
-
-
     return (
-      <ScrollView horizontal>
-        <Surface
-          elevation={0}
-          style={{
-            alignSelf: 'flex-start',
-            display: 'flex',
-            flexDirection: 'row',
-            gap: 10,
-            overflow: 'scroll',
-            overscrollBehaviorX: 'auto',
-          }}
-        >
+      <ScrollView showsHorizontalScrollIndicator={false} horizontal>
+        <Surface style={styles.categoryContainer}>
           {categories.map((category: Category, index: number) => (
             <Chip
               key={index}
@@ -166,89 +198,124 @@ useEffect(() => {
               icon={selectedCategory !== index ? category.icon : undefined}
               selected={selectedCategory === index}
               onPress={() => {
-                console.log(index)
                 setSelectedCategory(index);
-                if(selectedCategory==index) {
-                  setSelectedCategory(0)
+                if (selectedCategory === index) {
+                  setSelectedCategory(0);
                 }
-
-                handleAddFilter(category.label);
+                handleAddFilterCategory(category.label);
               }}
             >
               {Locales.t(category.label)}
             </Chip>
           ))}
-          {myTeams.map((team, index) => (
+          {myTeams.map((team: any, index: number) => (
             <Chip
               key={team.id}
               mode={selectedTeam !== index ? 'outlined' : undefined}
-              icon={selectedTeam !== index ? () => <Avatar.Image size={24} source={() => <SvgUri uri={team.logo} />} /> : undefined }
+              icon={selectedTeam !== index ? () => <Avatar.Image style={{backgroundColor:"none"}} size={24} source={() => <SvgUri uri={team.logo} />} /> : undefined}
               selected={selectedTeam === index}
               onPress={() => {
-                setSelectedTeam(index)
-                if(selectedTeam==index) {
-                  setSelectedTeam(-1)
+                setSelectedTeam(index);
+                if (selectedTeam === index) {
+                  setSelectedTeam(-1);
+                  handleRemoveFilterTeams(team.id.toString());
                 }
-                handleAddFilterTeams(team.id);
+                handleAddFilterTeams(team.id.toString());
               }}
             >
               {team.name}
             </Chip>
           ))}
-
-
-
-          {
-            myPlayers.map((player, index) => (
-              <Chip
-                key={player.id}
-                mode={selectedPlayer !== index ? 'outlined' : undefined}
-                icon={selectedPlayer !== index ? () => <Avatar.Image size={24} source={{uri: getPlayerHeadShotUrl(player.id)}} /> : undefined }
-                selected={selectedPlayer === index}
-                onPress={() => {
-                  setSelectedPlayer(index)
-                  if(selectedPlayer==index) {
-                    setSelectedPlayer(-1)
-                  }
-                  handleAddFilterTeams(player.id);
-                }}
-              >
-                {player.firstLastName}
-              </Chip>
-            ))
-          }
-
         </Surface>
       </ScrollView>
     );
   };
 
+const renderGameItem = ({ item }: { item: any }) => (
+  <TouchableOpacity onPress={()=>{console.log(item.games[0].gamePk)}} >
+    <Surface elevation={1} style={styles.gameItem}>
+      <Surface elevation={0} style={{ flexDirection: "row", marginBottom: 5 }}>
+        <Surface elevation={0} style={styles.teamContainer}>
+          <Avatar.Image style={{ backgroundColor: "none" }} source={() => <SvgUri uri={getTeamLogo(item.games[0].teams.home.team.id)} />} />
+          <Text>{item.games[0].teams.home.team.name}</Text>
+          <Text>{item.games[0].teams.home.leagueRecord.wins} - {item.games[0].teams.home.leagueRecord.losses}</Text>
+
+        </Surface>
+        <Surface elevation={0} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          {item.games[0].teams?.home?.score && <Text style={{ marginRight: 10 }} variant={"displaySmall"}>{item.games[0].teams?.home?.score || 0}</Text>}
+          <Text>{item.games[0].status.detailedState}</Text>
+          {item.games[0].teams?.home?.score && <Text style={{ marginLeft: 10 }} variant={"displaySmall"}>{item.games[0].teams?.away?.score || 0}</Text>}
+        </Surface>
+        <Surface elevation={0} style={styles.teamContainer}>
+          <Avatar.Image style={{ backgroundColor: "none" }} source={() => <SvgUri uri={getTeamLogo(item.games[0].teams.away.team.id)} />} />
+          <Text>{item.games[0].teams.away.team.name}</Text>
+          <Text>{item.games[0].teams.away.leagueRecord.wins} - {item.games[0].teams.away.leagueRecord.losses}</Text>
+        </Surface>
+      </Surface>
+      <Text>{item.date} · {item.games[0].venue.name}</Text>
+    </Surface>
+  </TouchableOpacity>
+);
+
   return (
-    <Surface style={{ flex: 1, padding: 10 }}>
+    <Surface style={styles.container}>
       <GameCategories categories={categories} />
-
-      <ScrollView>
-        {scheduleData&&
-          scheduleData.map((game, index) => (
-            <Surface key={index} style={{ padding: 10, margin: 5, borderRadius: 15, backgroundColor: 'white', height:80 }}>
-              {/*<Chip icon="clock">{game.time}</Chip>*/}
-              <Surface elevation={0} style={{flexDirection:"row"}}>
-                <Surface style={{flex:1}}>
-                  <Avatar.Image   source={() => <SvgUri uri={getTeamLogo(game.games[0].teams.home.team.id)} />}/>
-                  <Text>{game.games[0].teams.home.team.name}</Text>
-                </Surface>
-                <Surface style={{flex:1}}>
-
-                  <Text>{game.games[0].teams.away.team.name}</Text>
-                </Surface>
-              </Surface>
-              <Surface><Text>{game.date}</Text></Surface>
-            </Surface>
-          ))
-        }
-      </ScrollView>
+      {loading ? (
+        <ActivityIndicator size="large" />
+      ) : (
+        <FlatList
+          data={scheduleData}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          renderItem={renderGameItem}
+          contentContainerStyle={styles.listContent}
+          onEndReached={loadMore}
+        />
+      )}
+      <Modal
+        presentationStyle="pageSheet"
+        animationType="slide"
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <Game item={item} onClose={() => setModalVisible(false)} />
+      </Modal>
     </Surface>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 10,
+  },
+  categoryContainer: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    gap: 10,
+    overflow: 'scroll',
+    overscrollBehaviorX: 'auto',
+    paddingBottom: 10,
+  },
+  listContent: {
+    paddingBottom: 20,
+  },
+  gameItem: {
+    padding: 10,
+    margin: 5,
+    borderRadius: 15,
+    // backgroundColor: 'rgba(57,81,101,0.51)',
+    height: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: "column",
+  },
+  teamContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+    flexDirection: "column",
+    flex: 1,
+  },
+});
 
 export default Games;

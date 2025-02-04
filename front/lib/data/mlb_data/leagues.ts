@@ -21,7 +21,7 @@ export async function getLeagueById(Id: string) {
     console.log('Raw response:', text);
     const sanitizedText = text.replace(/NaN/g, 'null');
     const data = JSON.parse(sanitizedText);
-    return data;
+    return data[0];
   } catch (error) {
     console.error(`Error fetching league by Id ${Id}:`, error);
     throw error;
