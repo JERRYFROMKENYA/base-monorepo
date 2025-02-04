@@ -5,6 +5,7 @@
 const English = {
   more_info: 'More Info',
   upcoming:'Upcoming',
+  highlights:'Highlights',
   exitVelocity:"Exit Velocity",
   launchAngle:"Launch Angle",
   batSpeed:"Bat Speed",
@@ -13,6 +14,7 @@ const English = {
   recent:"Recent",
   suggested:"Suggested",
   all:"All",
+  past:"Past",
   new: 'New',
   popular: 'Popular',
   favorites: 'Favorites',

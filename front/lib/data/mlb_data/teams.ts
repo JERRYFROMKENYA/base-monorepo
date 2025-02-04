@@ -101,4 +101,24 @@ export async function searchTeams(search: string) {
   }
 }
 
+export async function getScheduleByTeamId(Id: string,season:string) {
+  try {
+    if (!season) {
+      season = new Date().getFullYear().toString();
+    }
+    const response = await fetch(`${DATA_URL_1}/schedule?teamId=${Id}&season=${season}`);
+    const text = await response.text();
+    // console.log('Raw response:', text);
+    const sanitizedText = text.replace(/NaN/g, 'null');
+    const schedule = JSON.parse(sanitizedText);
+    // console.log("Schedule Len: ",schedule.length)
+    return schedule;
+  } catch (error) {
+    console.error(`Error fetching schedule for teamId ${Id}:`, error);
+    throw error;
+  }
+}
 
+export function getTeamLogo(id:string){
+  return `https://www.mlbstatic.com/team-logos/${id}.svg`
+}

@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction, useEffect } from 'react';
-import { Avatar, Chip, Surface } from 'react-native-paper';
+import { Avatar, Chip, Surface, Text } from 'react-native-paper'
 import { ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SvgUri } from 'react-native-svg';
@@ -7,7 +7,7 @@ import { Locales } from '@/lib';
 import { getInterestedTeams } from '@/lib/data/pocketbase/teams';
 import { usePocketBase } from '@/lib/data/pocketbase';
 import { useAuth } from '@/lib/data/pocketbase/auth';
-import { getTeamById } from '@/lib/data/mlb_data/teams';
+import { getScheduleByTeamId, getTeamById, getTeamLogo } from '@/lib/data/mlb_data/teams'
 import { getInterestedPlayers } from '@/lib/data/pocketbase/players'
 import { getPlayerById, getPlayerHeadShotUrl } from '@/lib/data/mlb_data/players'
 import { getLeagueById } from '@/lib/data/mlb_data/leagues'
@@ -35,6 +35,8 @@ const Games = () => {
   const [selectedLeague, setSelectedLeague] = React.useState(-1);
   const [selectedPlayer, setSelectedPlayer] = React.useState(-1);
 
+  const [scheduleData, setScheduleData] = React.useState<any[]>([]);
+
   const { pb } = usePocketBase();
   const { user } = useAuth();
   const router = useRouter();
@@ -42,6 +44,8 @@ const Games = () => {
   const categories = [
     { label: 'all' },
     { label: 'upcoming', icon: 'calendar' },
+    { label: 'highlights', icon: 'clock' },
+
   ];
 
   useEffect(() => {
@@ -60,7 +64,7 @@ const Games = () => {
       const interestedLeagues = await Promise.all(
         leagues.map(async (league) => {
           const leagueData = await getLeagueById(league.leagueId);
-          return leagueData[0]
+          return leagueData
         })
       );
       setMyLeagues(interestedLeagues);
@@ -70,7 +74,7 @@ const Games = () => {
       const interestedPlayers = await Promise.all(
         players.map(async (player) => {
           const playerData = await getPlayerById(player.playerId);
-          return playerData[0]
+          return playerData
         })
       );
       setMyPlayers(interestedPlayers);
@@ -114,6 +118,31 @@ const Games = () => {
     }
   };
 
+
+const getScheduleData = async () => {
+  let teams = new Set<number>();
+  for (let team of myTeams) {
+    teams.add(team.id);
+  }
+  for (let player of myPlayers) {
+    teams.add(player.currentTeam_id);
+  }
+  console.log(teams);
+  let dataS: any[] = [];
+  for (let id of teams.values()) {
+    getScheduleByTeamId(id, 2025).then((d: any[]) => {
+      dataS.push(...d);
+      setScheduleData((p)=> [...p, ...d.filter(()=>!p.includes(d))]);
+    });
+  }
+  console.log("w", scheduleData);
+};
+
+useEffect(() => {
+  getScheduleData();
+}, [myTeams, myPlayers]);
+
+
   const GameCategories = ({ categories }: CategoryProps) => {
 
 
@@ -139,6 +168,10 @@ const Games = () => {
               onPress={() => {
                 console.log(index)
                 setSelectedCategory(index);
+                if(selectedCategory==index) {
+                  setSelectedCategory(0)
+                }
+
                 handleAddFilter(category.label);
               }}
             >
@@ -163,25 +196,7 @@ const Games = () => {
             </Chip>
           ))}
 
-          {
-            myLeagues.map((league, index) => (
-              <Chip
-                key={league.id}
-                mode={selectedLeague !== index ? 'outlined' : undefined}
-                icon={selectedLeague !== index ? () => <Avatar.Image size={24} source={() => <SvgUri uri={league.logo} />} /> : undefined }
-                selected={selectedLeague === index}
-                onPress={() => {
-                  setSelectedLeague(index)
-                  if(selectedLeague==index) {
-                    setSelectedLeague(-1)
-                  }
-                  handleAddFilterTeams(league.id);
-                }}
-              >
-                {league.name}
-              </Chip>
-            ))
-          }
+
 
           {
             myPlayers.map((player, index) => (
@@ -198,7 +213,7 @@ const Games = () => {
                   handleAddFilterTeams(player.id);
                 }}
               >
-                {player.name}
+                {player.firstLastName}
               </Chip>
             ))
           }
@@ -211,6 +226,27 @@ const Games = () => {
   return (
     <Surface style={{ flex: 1, padding: 10 }}>
       <GameCategories categories={categories} />
+
+      <ScrollView>
+        {scheduleData&&
+          scheduleData.map((game, index) => (
+            <Surface key={index} style={{ padding: 10, margin: 5, borderRadius: 15, backgroundColor: 'white', height:80 }}>
+              {/*<Chip icon="clock">{game.time}</Chip>*/}
+              <Surface elevation={0} style={{flexDirection:"row"}}>
+                <Surface style={{flex:1}}>
+                  <Avatar.Image   source={() => <SvgUri uri={getTeamLogo(game.games[0].teams.home.team.id)} />}/>
+                  <Text>{game.games[0].teams.home.team.name}</Text>
+                </Surface>
+                <Surface style={{flex:1}}>
+
+                  <Text>{game.games[0].teams.away.team.name}</Text>
+                </Surface>
+              </Surface>
+              <Surface><Text>{game.date}</Text></Surface>
+            </Surface>
+          ))
+        }
+      </ScrollView>
     </Surface>
   );
 };

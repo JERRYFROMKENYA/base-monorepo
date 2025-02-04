@@ -1,31 +1,34 @@
-import json
-
-import requests
 from flask import jsonify, request
 from app import app
 from app.util.utilities import process_endpoint_url
+
+def paginate(data, page, per_page):
+    start = (page - 1) * per_page
+    end = start + per_page
+    return data[start:end]
 
 @app.route('/schedule', methods=['GET'])
 def get_schedule():
     sports_id = request.args.get('sportId', '1')
     season = request.args.get('season', '2025')
     search_key = request.args.get('q', '').strip('"').strip("'")
-    team_id= request.args.get('teamId', '')
+    team_id = request.args.get('teamId', '')
     game_pk = request.args.get('gamePk', '')
     game_pks = request.args.get('gamePks', '')
     start_date = request.args.get('startDate', '')
     end_date = request.args.get('endDate', '')
+    page = int(request.args.get('page', 1))
+    per_page = int(request.args.get('per_page', 10))
 
     schedule_endpoint_url = f'https://statsapi.mlb.com/api/v1/schedule' + (
         f'?sportId={sports_id}&season={season}' if sports_id and season else '') + (
-        f'&teamId={team_id}' if team_id else '') +(
+        f'&teamId={team_id}' if team_id else '') + (
         f'&gamePk={game_pk}' if game_pk else '') + (
         f'&gamePks=[{game_pks}]' if game_pks else '') + (
         f'&startDate={start_date}' if start_date else '') + (
         f'&endDate={end_date}' if end_date else '')
     print(schedule_endpoint_url)
     schedule = process_endpoint_url(schedule_endpoint_url, 'dates')
-
 
     full_schedule = schedule.to_dict(orient='records')
 
@@ -57,9 +60,8 @@ def get_schedule():
             filtered_day['games'] = filtered_games
             filtered_schedule.append(filtered_day)
 
-    print(len(filtered_schedule))
-
-    return jsonify(filtered_schedule)
+    paginated_schedule = paginate(filtered_schedule, page, per_page)
+    return jsonify(paginated_schedule)
 
 
 
