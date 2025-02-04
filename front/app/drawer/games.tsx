@@ -13,6 +13,7 @@ import { getPlayerById, getPlayerHeadShotUrl } from '@/lib/data/mlb_data/players
 import { getLeagueById } from '@/lib/data/mlb_data/leagues';
 import { getInterestedLeagues } from '@/lib/data/pocketbase/leagues';
 import Game from '@/app/modals/Game'
+import { fetchGameContent } from '@/lib/data/mlb_data/games'
 
 interface Category {
   label: string;
@@ -187,6 +188,32 @@ const Games = () => {
     setCurrentPage((prev) => prev + 1);
   }
 
+  const handleShowGame=(item:any)=>{
+    setItem(item)
+    setModalVisible(true)
+  }
+
+  const [content, setContent] = useState<any>(null);
+  const [noContent, setNoContent] = useState<boolean>(false);
+  // const [explanation, setExplanation] = useState<string>(stats.explanation.length > 200 ? stats.explanation.substring(0, 200) : stats.explanation);
+  // const [description, setDescription] = useState<string>(stats.description.length > 200 ? stats.description.substring(0, 200) : stats.description);
+
+  useEffect(() => {
+    async function fetchGame() {
+      console.log(item);
+      const response = await fetchGameContent(item.games[0].gamePk);
+      console.log(response);
+      setContent(response);
+      setNoContent(response && (!response.summary?.hasVideoHighlights
+        && !response.summary?.hasPreviewArticle
+        && !response.summary?.hasRecapArticle
+        && !response.summary?.hasWrapArticle));
+      console.log(noContent);
+    }
+    fetchGame();
+    console.log(content);
+  }, [item]);
+
   const GameCategories = ({ categories }: CategoryProps) => {
     return (
       <ScrollView showsHorizontalScrollIndicator={false} horizontal>
@@ -232,7 +259,9 @@ const Games = () => {
   };
 
 const renderGameItem = ({ item }: { item: any }) => (
-  <TouchableOpacity onPress={()=>{console.log(item.games[0].gamePk)}} >
+  <TouchableOpacity onPress={()=>{
+    handleShowGame(item)
+    console.log(item.games[0].gamePk)}}>
     <Surface elevation={1} style={styles.gameItem}>
       <Surface elevation={0} style={{ flexDirection: "row", marginBottom: 5 }}>
         <Surface elevation={0} style={styles.teamContainer}>
@@ -277,7 +306,7 @@ const renderGameItem = ({ item }: { item: any }) => (
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <Game item={item} onClose={() => setModalVisible(false)} />
+        <Game item={item} content={content?.content} onClose={() => setModalVisible(false)} />
       </Modal>
     </Surface>
   );
