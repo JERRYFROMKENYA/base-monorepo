@@ -37,3 +37,192 @@ docker-compose.yml
 */.chromadb/**/*
 */**/chromadb/**
 
+/server_3/00210fe8-c08e29a8-155e1e1b-csvm-diamondx64-asset.m3u8
+/server_3/bakup/etc/apclix_enable
+/server_3/bakup (1)/etc/apclix_enable
+/server_3/bakup (2)/etc/apclix_enable
+/server_3/bakup (3)/etc/apclix_enable
+/server_3/bakup (1)/etc/config/arp
+/server_3/bakup (2)/etc/config/arp
+/server_3/bakup (3)/etc/config/arp
+/ascii-commit.sh
+/server_3/bakup.file
+/server_3/bakup (1).file
+/server_3/bakup/etc/nginx/ssl/cflogin.key
+/server_3/bakup (1)/etc/nginx/ssl/cflogin.key
+/server_3/bakup (2)/etc/nginx/ssl/cflogin.key
+/server_3/bakup (3)/etc/nginx/ssl/cflogin.key
+/server_3/bakup/etc/nginx/ssl/cflogin.pem
+/server_3/bakup (1)/etc/nginx/ssl/cflogin.pem
+/server_3/bakup (2)/etc/nginx/ssl/cflogin.pem
+/server_3/bakup (3)/etc/nginx/ssl/cflogin.pem
+/server_3/bakup/etc/changeconfig
+/server_3/bakup (1)/etc/changeconfig
+/server_3/bakup (2)/etc/changeconfig
+/server_3/bakup (3)/etc/changeconfig
+/server_3/bakup/etc/config/cluster
+/server_3/bakup (1)/etc/config/cluster
+/server_3/bakup (2)/etc/config/cluster
+/server_3/bakup (3)/etc/config/cluster
+/server_3/bakup/etc/config/common
+/server_3/bakup (1)/etc/config/common
+/server_3/bakup (2)/etc/config/common
+/server_3/bakup (3)/etc/config/common
+/server_3/bakup/etc/config/common_ap
+/server_3/bakup (1)/etc/config/common_ap
+/server_3/bakup (2)/etc/config/common_ap
+/server_3/bakup (3)/etc/config/common_ap
+/server_3/bakup/etc/config/common_rp
+/server_3/bakup (1)/etc/config/common_rp
+/server_3/bakup (2)/etc/config/common_rp
+/server_3/bakup (3)/etc/config/common_rp
+/server_3/bakup/etc/config/ddns
+/server_3/bakup (1)/etc/config/ddns
+/server_3/bakup (2)/etc/config/ddns
+/server_3/bakup (3)/etc/config/ddns
+/server_3/bakup/etc/config/dhcp
+/server_3/bakup (1)/etc/config/dhcp
+/server_3/bakup (2)/etc/config/dhcp
+/server_3/bakup (3)/etc/config/dhcp
+/server_3/bakup/etc/config/dropbear
+/server_3/bakup (1)/etc/config/dropbear
+/server_3/bakup (2)/etc/config/dropbear
+/server_3/bakup (3)/etc/config/dropbear
+/server_3/bakup/etc/dropbear/dropbear_dss_host_key
+/server_3/bakup (1)/etc/dropbear/dropbear_dss_host_key
+/server_3/bakup (2)/etc/dropbear/dropbear_dss_host_key
+/server_3/bakup (3)/etc/dropbear/dropbear_dss_host_key
+/server_3/bakup/etc/dropbear/dropbear_rsa_host_key
+/server_3/bakup (1)/etc/dropbear/dropbear_rsa_host_key
+/server_3/bakup (2)/etc/dropbear/dropbear_rsa_host_key
+/server_3/bakup (3)/etc/dropbear/dropbear_rsa_host_key
+/server_3/bakup/etc/nginx/fastcgi_params
+/server_3/bakup (1)/etc/nginx/fastcgi_params
+/server_3/bakup (2)/etc/nginx/fastcgi_params
+/server_3/bakup (3)/etc/nginx/fastcgi_params
+/server_3/bakup/etc/config/firewall
+/server_3/bakup (1)/etc/config/firewall
+/server_3/bakup (2)/etc/config/firewall
+/server_3/bakup (3)/etc/config/firewall
+/server_3/bakup/etc/firewall.user
+/server_3/bakup (1)/etc/firewall.user
+/server_3/bakup (2)/etc/firewall.user
+/server_3/bakup (3)/etc/firewall.user
+/server_3/bakup/etc/group
+/server_3/bakup (1)/etc/group
+/server_3/bakup (2)/etc/group
+/server_3/bakup (3)/etc/group
+/server_3/bakup/etc/hosts
+/server_3/bakup (1)/etc/hosts
+/server_3/bakup (2)/etc/hosts
+/server_3/bakup (3)/etc/hosts
+/server_3/bakup/etc/inittab
+/server_3/bakup (1)/etc/inittab
+/server_3/bakup (2)/etc/inittab
+/server_3/bakup (3)/etc/inittab
+/server_3/bakup/etc/nginx/koi-utf
+/server_3/bakup (1)/etc/nginx/koi-utf
+/server_3/bakup (2)/etc/nginx/koi-utf
+/server_3/bakup (3)/etc/nginx/koi-utf
+/server_3/bakup/etc/nginx/koi-win
+/server_3/bakup (1)/etc/nginx/koi-win
+/server_3/bakup (2)/etc/nginx/koi-win
+/server_3/bakup (3)/etc/nginx/koi-win
+/server_3/bakup/etc/config/led
+/server_3/bakup (1)/etc/config/led
+/server_3/bakup (2)/etc/config/led
+/server_3/bakup (3)/etc/config/led
+/server_3/bakup/etc/config/login
+/server_3/bakup (1)/etc/config/login
+/server_3/bakup (2)/etc/config/login
+/server_3/bakup (3)/etc/config/login
+/server_3/bakup/etc/config/mbox
+/server_3/bakup (1)/etc/config/mbox
+/server_3/bakup (2)/etc/config/mbox
+/server_3/bakup (3)/etc/config/mbox
+/server_3/bakup/etc/nginx/mime.types
+/server_3/bakup (1)/etc/nginx/mime.types
+/server_3/bakup (2)/etc/nginx/mime.types
+/server_3/bakup (3)/etc/nginx/mime.types
+/server_3/bakup/etc/nginx/naxsi_core.rules
+/server_3/bakup (1)/etc/nginx/naxsi_core.rules
+/server_3/bakup (2)/etc/nginx/naxsi_core.rules
+/server_3/bakup (3)/etc/nginx/naxsi_core.rules
+/server_3/bakup/etc/config/network
+/server_3/bakup (1)/etc/config/network
+/server_3/bakup (2)/etc/config/network
+/server_3/bakup (3)/etc/config/network
+/server_3/bakup/etc/nginx/nginx.conf
+/server_3/bakup (1)/etc/nginx/nginx.conf
+/server_3/bakup (2)/etc/nginx/nginx.conf
+/server_3/bakup (3)/etc/nginx/nginx.conf
+/server_3/bakup/etc/nginx/nginx.conf.syslog
+/server_3/bakup (1)/etc/nginx/nginx.conf.syslog
+/server_3/bakup (2)/etc/nginx/nginx.conf.syslog
+/server_3/bakup (3)/etc/nginx/nginx.conf.syslog
+/server_3/bakup/etc/parental_ctl.json
+/server_3/bakup (1)/etc/parental_ctl.json
+/server_3/bakup (2)/etc/parental_ctl.json
+/server_3/bakup (3)/etc/parental_ctl.json
+/server_3/bakup/etc/passwd
+/server_3/bakup (1)/etc/passwd
+/server_3/bakup (2)/etc/passwd
+/server_3/bakup (3)/etc/passwd
+/pic.txt
+/server_3/bakup/etc/previous_mode
+/server_3/bakup (1)/etc/previous_mode
+/server_3/bakup (2)/etc/previous_mode
+/server_3/bakup (3)/etc/previous_mode
+/server_3/bakup/etc/config/probe
+/server_3/bakup (1)/etc/config/probe
+/server_3/bakup (2)/etc/config/probe
+/server_3/bakup (3)/etc/config/probe
+/server_3/bakup/etc/profile
+/server_3/bakup (1)/etc/profile
+/server_3/bakup (2)/etc/profile
+/server_3/bakup (3)/etc/profile
+/server_3/bakup/etc/rc.local
+/server_3/bakup (1)/etc/rc.local
+/server_3/bakup (2)/etc/rc.local
+/server_3/bakup (3)/etc/rc.local
+/server_3/bakup/etc/config/remote
+/server_3/bakup (1)/etc/config/remote
+/server_3/bakup (2)/etc/config/remote
+/server_3/bakup (3)/etc/config/remote
+/reset.sh
+/server_3/bakup/etc/crontabs/root
+/server_3/bakup (1)/etc/crontabs/root
+/server_3/bakup (2)/etc/crontabs/root
+/server_3/bakup (3)/etc/crontabs/root
+/server_3/bakup/etc/shadow
+/server_3/bakup (1)/etc/shadow
+/server_3/bakup (2)/etc/shadow
+/server_3/bakup (3)/etc/shadow
+/server_3/bakup/etc/shells
+/server_3/bakup (1)/etc/shells
+/server_3/bakup (2)/etc/shells
+/server_3/bakup (3)/etc/shells
+/server_3/bakup/etc/sysctl.conf
+/server_3/bakup (1)/etc/sysctl.conf
+/server_3/bakup (2)/etc/sysctl.conf
+/server_3/bakup (3)/etc/sysctl.conf
+/server_3/bakup/etc/config/system
+/server_3/bakup (1)/etc/config/system
+/server_3/bakup (2)/etc/config/system
+/server_3/bakup (3)/etc/config/system
+/server_3/bakup/etc/config/system_ac
+/server_3/bakup (1)/etc/config/system_ac
+/server_3/bakup (2)/etc/config/system_ac
+/server_3/bakup (3)/etc/config/system_ac
+/server_3/bakup/etc/config/system_ap
+/server_3/bakup (1)/etc/config/system_ap
+/server_3/bakup (2)/etc/config/system_ap
+/server_3/bakup (3)/etc/config/system_ap
+/server_3/bakup/etc/nginx/win-utf
+/server_3/bakup (1)/etc/nginx/win-utf
+/server_3/bakup (2)/etc/nginx/win-utf
+/server_3/bakup (3)/etc/nginx/win-utf
+/server_3/bakup/etc/config/wireless
+/server_3/bakup (1)/etc/config/wireless
+/server_3/bakup (2)/etc/config/wireless
+/server_3/bakup (3)/etc/config/wireless
