@@ -13,7 +13,8 @@ import { getPlayerById, getPlayerHeadShotUrl } from '@/lib/data/mlb_data/players
 import { getLeagueById } from '@/lib/data/mlb_data/leagues';
 import { getInterestedLeagues } from '@/lib/data/pocketbase/leagues';
 import Game from '@/app/modals/Game'
-import { fetchGameContent } from '@/lib/data/mlb_data/games'
+import { fetchGameContent, fetchGameExplanation, fetchGameSummary } from '@/lib/data/mlb_data/games'
+import { getPlayExplanation } from '@/lib/data/mlb_data/videos'
 
 interface Category {
   label: string;
@@ -38,6 +39,9 @@ const Games = () => {
   const [selectedPlayer, setSelectedPlayer] = React.useState(-1);
   const [scheduleData, setScheduleData] = React.useState<any[]>([]);
   const [selectedDate, setSelectedDate] = React.useState(new Date().toISOString().slice(0, 10));
+  const [summary, setSummary] = React.useState('');
+  const [explanation, setExplanation] = React.useState('');
+
   const [endDate, setEndDate] = React.useState(() => {
     const date = new Date();
     date.setFullYear(date.getFullYear() + 1);
@@ -189,6 +193,14 @@ const Games = () => {
   }
 
   const handleShowGame=(item:any)=>{
+    fetchGameExplanation(item.games[0].gamePk).then((response) => {
+      setExplanation(response.summary);
+    })
+    fetchGameSummary(item.games[0].gamePk).then((response) => {
+      setSummary(response.summary);
+    })
+
+
     setItem(item)
     setModalVisible(true)
   }
@@ -306,7 +318,7 @@ const renderGameItem = ({ item }: { item: any }) => (
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <Game item={item} content={content?.content} onClose={() => setModalVisible(false)} />
+        <Game item={item} summaryData={summary} explanation={explanation} content={content?.content} onClose={() => setModalVisible(false)} />
       </Modal>
     </Surface>
   );

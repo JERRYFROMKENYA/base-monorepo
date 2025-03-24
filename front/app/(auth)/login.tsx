@@ -135,8 +135,8 @@ export default function AuthScreen() {
                   <Divider style={{borderColor:"gray", height:2, marginTop:20,width:"40%"}} />
                 </View>
               </>}
-              {isLogin&&<Button icon={"google"} mode={"contained"} buttonColor={"gray"} textColor={"white"}> Sign in With
-                Google</Button>}
+              {/*{isLogin&&<Button icon={"google"} mode={"contained"} buttonColor={"gray"} textColor={"white"}> Sign in With*/}
+              {/*  Google</Button>}*/}
               <View style={{flexDirection:"row", alignItems:"center", justifyContent:"center"}}>
                 <Text>{isLogin && !isPasswordReset ? "New to Base ? ": "Have you joined us before ?"}</Text>
                 <Button  style={{ alignSelf: "flex-start", marginTop:0 }} onPress={() => {setError();setIsLogin(!isLogin)}}>{isLogin && !isPasswordReset ? "Register ": "Login"}</Button>

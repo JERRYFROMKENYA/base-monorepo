@@ -141,6 +141,12 @@ const RootLayoutNav = () => {
             name="modals/[url]"
             options={{ title: Locales.t('more_info'), presentation:'modal' }}
           />
+          <Stack.Screen
+            name="team/[id]"
+            options={{ title: Locales.t('more_info'), presentation:'modal' }} />
+          <Stack.Screen
+            name="player/[id]"
+            options={{ title: Locales.t('more_info'), presentation:'modal' }} />
 
           <Stack.Screen
           name="index"

@@ -1,16 +1,17 @@
 import React, { memo, useEffect, useState } from 'react'
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native'
 import { Surface, Text, Divider, Appbar, Avatar } from 'react-native-paper'
 import { Locales } from '@/lib';
 import { View } from '@/lib/presentation/Themed';
 import { SvgUri } from 'react-native-svg'
 import { getPlayerHeadShotUrl } from '@/lib/data/mlb_data/players'
-
+import { useRouter } from 'expo-router'
 const Url = ({ onClose, hrData, stats, teamData }: { onClose: any, hrData: any, stats: any, teamData:any }) => {
   const [moreDescription, setMoreDescription] = useState<boolean>(false);
   const [moreExplanation, setMoreExplanation] = useState<boolean>(false);
   const [explanation, setExplanation] = useState<string>(stats.explanation.length > 200 ? stats.explanation.substring(0, 200) : stats.explanation);
   const [description, setDescription] = useState<string>(stats.description.length > 200 ? stats.description.substring(0, 200) : stats.description);
+  const router = useRouter();
 
   useEffect(() => {
     setExplanation(!moreExplanation ? stats.explanation.substring(0, 200) : stats.explanation)
@@ -58,12 +59,14 @@ const Url = ({ onClose, hrData, stats, teamData }: { onClose: any, hrData: any, 
               <Text variant={'titleSmall'} style={{ fontWeight: 'bold', marginBottom:5 }}>Teams</Text>
               <ScrollView horizontal>
                 {teamData.map((team: any, index: number) => (
+                  <TouchableOpacity key={index} onPress={() => { router.push(`/team/${team.id}`) }}>
                   <Surface key={index} style={{ ...styles.textCard, margin:5,
                     justifyContent:"center", alignContent:"center"}}>
                     <Avatar.Image  source={() => <SvgUri uri={team.logo} />}/>
                     <Text variant={'bodyMedium'}>{team.name}</Text>
                     <Text variant={'bodySmall'}>{team.abbreviation}</Text>
                   </Surface>
+                  </TouchableOpacity>
                 ))}
               </ScrollView>
             </Surface>
@@ -75,12 +78,14 @@ const Url = ({ onClose, hrData, stats, teamData }: { onClose: any, hrData: any, 
         {teamData.map((team: any, index: number) => (
           team.players.map((player: any, playerIndex: number) => {
             return(
+              <TouchableOpacity  key={playerIndex} onPress={() => {router.push(`/player/${player.id}`)}}>
               <Surface key={playerIndex}
                        style={{ ...styles.textCard, margin: 5, justifyContent: 'center', alignContent: 'center' }}>
                 <Avatar.Image style={{ backgroundColor: 'none' }} source={{uri: getPlayerHeadShotUrl(player.id)}} />
                 <Text variant={'bodyMedium'}>{player.name}</Text>
                 <Text variant={'bodySmall'}>{team.abbreviation}</Text>
               </Surface>
+              </TouchableOpacity>
             )
           })
         ))}

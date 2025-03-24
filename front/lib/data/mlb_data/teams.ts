@@ -112,10 +112,24 @@ export async function getScheduleByTeamId(Id: string,season:string, startDate:st
     // console.log('Raw response:', text);
     const sanitizedText = text.replace(/NaN/g, 'null');
     const schedule = JSON.parse(sanitizedText);
-    // console.log("Schedule Len: ",schedule.length)
+    console.log("Schedule Len: ",schedule.length)
     return schedule;
   } catch (error) {
     console.error(`Error fetching schedule for teamId ${Id}:`, error);
+    throw error;
+  }
+}
+
+export async function getRosterByTeamId(Id: string) {
+  try {
+    const response = await fetch(`${DATA_URL_1}/team_roster?teamId=${Id}`);
+    const text = await response.text();
+    console.log('Raw response:', text);
+    const sanitizedText = text.replace(/NaN/g, 'null');
+    const roster = JSON.parse(sanitizedText);
+    return roster;
+  } catch (error) {
+    console.error(`Error fetching roster for teamId ${Id}:`, error);
     throw error;
   }
 }

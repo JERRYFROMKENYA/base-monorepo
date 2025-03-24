@@ -1,4 +1,5 @@
 import { DATA_URL_1 } from '@/lib/constants'
+import { fetchWithRetry } from '@/lib/data/mlb_data/videos'
 
 export async function getAllPlayers() {
   try {
@@ -95,7 +96,9 @@ export async function getPlayersByTeamIds(Id: string[]) {
 
 
 
-
+export function getPlayerInfull(player: any) {
+  return fetchWithRetry(`https://statsapi.mlb.com/api/v1/people/${player}?hydrate=stats(group=[hitting,pitching],type=season,season=2016),social,awards`)
+}
 export function getPlayerHeadShotUrl(playerId: string) {
   return `https://securea.mlb.com/mlb/images/players/head_shot/${playerId}.jpg`;
 }
